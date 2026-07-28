@@ -392,26 +392,51 @@
 
         <div class="registry-grid">
           <article class="reg-card reveal">
-            <div class="reg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V9l8-5 8 5v12"/><path d="M9 21v-6h6v6"/></svg></div>
-            <h3>[Nombre del registro 1]</h3>
-            <p>[Descripción breve del registro]</p>
-            <a href="#" class="btn-ec btn-ec--ghost" aria-label="Ver registro">Ver registro</a>
+            <div class="reg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></div>
+            <h3>Liverpool</h3>
+            <p>Encuentra nuestra mesa de regalos con artículos para el hogar, electrodomésticos y más.</p>
+            <a href="https://www.liverpool.com.mx/mesa-de-regalos" class="btn-ec btn-ec--ghost" target="_blank" rel="noopener">Ver mesa de regalos</a>
           </article>
           <article class="reg-card reveal">
-            <div class="reg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 8h20v3H2z"/><path d="M4 11v9h16v-9M12 8v12"/><path d="M12 8S9 3 6.5 4 8 8 12 8s4-5 1.5-4S12 8 12 8Z"/></svg></div>
-            <h3>[Nombre del registro 2]</h3>
-            <p>[Descripción breve del registro]</p>
-            <a href="#" class="btn-ec btn-ec--ghost" aria-label="Ver registro">Ver registro</a>
+            <div class="reg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+            <h3>Transferencia bancaria</h3>
+            <p>Si prefieres hacer un depósito o transferencia, aquí tienes nuestros datos.</p>
+            <button class="btn-ec btn-ec--ghost registry-bank-btn" data-bank="banco" data-account="1234567890" data-clabe="012345678901234567" data-name="Astrid López / Fidel Evangelista">Ver datos bancarios</button>
           </article>
           <article class="reg-card reveal">
-            <div class="reg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 21s-7-4.4-9.2-8.6C1 9 2.7 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21.3 5 23 9 21.2 12.4 19 16.6 12 21 12 21Z"/></svg></div>
-            <h3>[Nombre del registro 3]</h3>
-            <p>[Descripción breve del registro]</p>
-            <a href="#" class="btn-ec btn-ec--ghost" aria-label="Ver registro">Ver registro</a>
+            <div class="reg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+            <h3>Fondo de luna de miel</h3>
+            <p>Ayúdanos a vivir la experiencia de nuestra luna de miel con una contribución voluntaria.</p>
+            <a href="https://www.paypal.com/paypalme/tu-usuario" class="btn-ec btn-ec--ghost" target="_blank" rel="noopener">Contribuir</a>
           </article>
         </div>
       </div>
     </section>
+
+    <!-- ============================ BANK MODAL ============================ -->
+    <div class="bank-modal" id="bankModal">
+      <div class="bank-modal__card">
+        <button class="bank-modal__close" id="bankModalClose" aria-label="Cerrar">&times;</button>
+        <h3>Datos bancarios</h3>
+        <div class="bank-modal__row">
+          <span class="bank-modal__label">Titular</span>
+          <span class="bank-modal__value" id="bankName">—</span>
+        </div>
+        <div class="bank-modal__row">
+          <span class="bank-modal__label">Banco</span>
+          <span class="bank-modal__value" id="bankBank">—</span>
+        </div>
+        <div class="bank-modal__row">
+          <span class="bank-modal__label">Cuenta</span>
+          <span class="bank-modal__value bank-modal__copy" id="bankAccount" data-copy="true">—</span>
+        </div>
+        <div class="bank-modal__row">
+          <span class="bank-modal__label">CLABE</span>
+          <span class="bank-modal__value bank-modal__copy" id="bankClabe" data-copy="true">—</span>
+        </div>
+        <p class="bank-modal__hint">Toca un dato para copiarlo al portapapeles</p>
+      </div>
+    </div>
 
     <!-- ============================ TRAVEL & STAY ============================ -->
     <section class="section" id="travel" aria-labelledby="travel-title">

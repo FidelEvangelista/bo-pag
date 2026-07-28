@@ -247,6 +247,58 @@
     });
   }
 
+  /* ---- Bank modal ---------------------------------------------------- */
+  function initBankModal() {
+    var modal = document.getElementById('bankModal');
+    var closeBtn = document.getElementById('bankModalClose');
+    if (!modal) return;
+
+    // Abrir modal
+    var bankBtns = document.querySelectorAll('.registry-bank-btn');
+    bankBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.getElementById('bankBank').textContent = btn.getAttribute('data-bank');
+        document.getElementById('bankAccount').textContent = btn.getAttribute('data-account');
+        document.getElementById('bankAccount').setAttribute('data-val', btn.getAttribute('data-account'));
+        document.getElementById('bankClabe').textContent = btn.getAttribute('data-clabe');
+        document.getElementById('bankClabe').setAttribute('data-val', btn.getAttribute('data-clabe'));
+        document.getElementById('bankName').textContent = btn.getAttribute('data-name');
+        modal.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    // Cerrar modal
+    function closeModal() {
+      modal.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+    });
+
+    // Copiar al portapapeles
+    var copyEls = modal.querySelectorAll('[data-copy]');
+    copyEls.forEach(function (el) {
+      el.addEventListener('click', function () {
+        var val = el.getAttribute('data-val') || el.textContent;
+        navigator.clipboard.writeText(val).then(function () {
+          el.classList.add('copied');
+          var original = el.textContent;
+          el.textContent = '¡Copiado!';
+          setTimeout(function () {
+            el.textContent = original;
+            el.classList.remove('copied');
+          }, 1500);
+        }).catch(function () {});
+      });
+    });
+  }
+
   /* ---- Boot --------------------------------------------------------- */
   function boot() {
     initHeader();
@@ -256,6 +308,7 @@
     initReveal();
     initRsvp();
     initMusic();
+    initBankModal();
   }
 
   if (document.readyState === 'loading') {

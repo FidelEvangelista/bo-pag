@@ -915,3 +915,93 @@ a:hover { color: var(--gold); }
 @media (prefers-reduced-motion: reduce) {
   .welcome-overlay { transition: none; }
 }
+
+/* =====================================================================
+   Bank Modal
+   ===================================================================== */
+.bank-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(44,20,28,.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .3s ease, visibility .3s ease;
+}
+.bank-modal.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+.bank-modal__card {
+  background: var(--ivory);
+  border: 1px solid var(--blush-deep);
+  border-radius: var(--radius);
+  padding: 2rem 2.2rem;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+.bank-modal__close {
+  position: absolute;
+  top: .8rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+.bank-modal__close:hover { color: var(--wine); }
+.bank-modal__card h3 {
+  font-size: 1.6rem;
+  margin-bottom: 1.2rem;
+}
+.bank-modal__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .65rem 0;
+  border-bottom: 1px dashed var(--blush-deep);
+}
+.bank-modal__row:last-of-type { border-bottom: none; }
+.bank-modal__label {
+  font-family: var(--ff-body);
+  font-weight: 500;
+  font-size: .72rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--sage-deep);
+}
+.bank-modal__value {
+  font-family: var(--ff-body);
+  font-weight: 400;
+  font-size: .95rem;
+  color: var(--ink);
+}
+.bank-modal__copy {
+  cursor: pointer;
+  padding: .2rem .5rem;
+  border-radius: var(--radius);
+  transition: background .2s ease;
+}
+.bank-modal__copy:hover {
+  background: rgba(175,138,76,.12);
+}
+.bank-modal__copy.copied {
+  background: rgba(139,154,130,.2);
+  color: var(--sage-deep);
+}
+.bank-modal__hint {
+  text-align: center;
+  color: var(--muted);
+  font-size: .78rem;
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
