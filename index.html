@@ -18,6 +18,22 @@
 
   <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    html.fonts-loading .welcome-inner { opacity: 0; }
+  </style>
+  <script>
+    (function () {
+      document.documentElement.classList.add('fonts-loading');
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () {
+          document.documentElement.classList.remove('fonts-loading');
+        });
+      } else {
+        document.documentElement.classList.remove('fonts-loading');
+      }
+    })();
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Saltar al contenido</a>

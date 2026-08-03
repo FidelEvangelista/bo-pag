@@ -203,20 +203,35 @@
     if (!btn || !audio) return;
 
     var playing = false;
+    var FADE_IN_MS = 15000;
+    var TARGET_VOL = 0.9;
+    var fadeTimer = null;
 
+    // Reproducir con fade-in (volumen de menos a más)
     function playMusic() {
+      if (fadeTimer) clearInterval(fadeTimer);
+      audio.volume = 0;
       audio.play().then(function () {
         playing = true;
+        var step = 0;
+        fadeTimer = setInterval(function () {
+          step += 1;
+          audio.volume = Math.min(step / 100 * TARGET_VOL, TARGET_VOL);
+          if (step >= 100) clearInterval(fadeTimer);
+        }, FADE_IN_MS / 100);
       }).catch(function () {});
     }
 
     // Clic en "Entrar" del overlay → música + ocultar overlay
     if (welcomeBtn && overlay) {
       document.body.style.overflow = 'hidden';
+      window.scrollTo(0, 0);
+
       welcomeBtn.addEventListener('click', function () {
         playMusic();
         overlay.classList.add('is-hidden');
         document.body.style.overflow = '';
+        window.scrollTo({ top: 0, left: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
       });
     }
 
@@ -224,11 +239,10 @@
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
       if (playing) {
+        if (fadeTimer) clearInterval(fadeTimer);
         audio.pause();
       } else {
-        audio.play().then(function () {
-          playing = true;
-        }).catch(function () {});
+        playMusic();
       }
     });
 
@@ -299,6 +313,55 @@
     });
   }
 
+  /* ---- Magic dust sparkles ------------------------------------------- */
+  function initSparkles() {
+    if (reduceMotion) return;
+    var wrap = document.createElement('div');
+    wrap.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(wrap);
+
+    var palette = ['#D6C3A3', '#A67C38', '#F3EADC', '#F7EADD', '#FFFDF9'];
+    var maxOnScreen = 55;
+
+    function spawn(x, y, size, dur) {
+      if (wrap.childElementCount >= maxOnScreen) wrap.firstElementChild.remove();
+      var p = document.createElement('i');
+      p.className = 'sparkle';
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.background = palette[Math.floor(Math.random() * palette.length)];
+      p.style.setProperty('--drift', (Math.random() * 70 - 35).toFixed(0) + 'px');
+      p.style.setProperty('--dur', dur + 's');
+      wrap.appendChild(p);
+      p.addEventListener('animationend', function () { p.remove(); });
+    }
+
+    var lastMove = 0;
+    window.addEventListener('pointermove', function (e) {
+      var now = Date.now();
+      if (now - lastMove < 40) return;
+      lastMove = now;
+      if (Math.random() < 0.55) {
+        spawn(e.clientX, e.clientY, 5 + Math.random() * 6, 0.8 + Math.random() * 0.7);
+      }
+    }, { passive: true });
+
+    window.addEventListener('pointerdown', function (e) {
+      for (var i = 0; i < 12; i++) {
+        setTimeout(function () {
+          spawn(
+            e.clientX + (Math.random() * 110 - 55),
+            e.clientY + (Math.random() * 110 - 55),
+            5 + Math.random() * 8,
+            0.9 + Math.random() * 0.8
+          );
+        }, i * 35);
+      }
+    }, { passive: true });
+  }
+
   /* ---- Boot --------------------------------------------------------- */
   function boot() {
     initHeader();
@@ -309,6 +372,7 @@
     initRsvp();
     initMusic();
     initBankModal();
+    initSparkles();
   }
 
   if (document.readyState === 'loading') {
