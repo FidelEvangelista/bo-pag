@@ -151,8 +151,6 @@
         name:      document.getElementById('rsvp-name').value.trim(),
         email:     document.getElementById('rsvp-email').value.trim(),
         attending: attending ? attending.value : '',
-        guests:    document.getElementById('rsvp-guests').value,
-        meal:      document.getElementById('rsvp-meal').value,
         song:      document.getElementById('rsvp-song').value.trim(),
         note:      document.getElementById('rsvp-note').value.trim()
       };
