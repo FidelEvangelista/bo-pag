@@ -226,6 +226,7 @@
       window.scrollTo(0, 0);
 
       welcomeBtn.addEventListener('click', function () {
+        welcomeBtn.classList.add('is-opening');
         playMusic();
         overlay.classList.add('is-hidden');
         document.body.style.overflow = '';
