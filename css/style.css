@@ -1302,40 +1302,40 @@ a:hover { color: var(--gold); }
   transform: translateY(-2px);
 }
 .welcome-seal { position: relative; width: 30px; height: 22px; flex: none; }
-.welcome-seal > svg { display: block; }
-.welcome-seal .wseal-env { width: 100%; height: 100%; }
-.wseal-flap {
-  transform-box: fill-box;
-  transform-origin: 50% 4px;
-  transition: transform .45s cubic-bezier(.34,1.2,.5,1), opacity .45s ease, color .45s ease;
+.welcome-seal svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.wseal-closed,
+.wseal-open {
+  transition: opacity .32s ease, transform .5s cubic-bezier(.34,1.25,.5,1);
 }
-.welcome-btn:hover .wseal-flap { transform: translateY(-1px); }
-.welcome-btn.is-opening .wseal-flap {
-  transform: scaleY(.18) translateY(-2px);
-  opacity: .35;
-}
-.wseal-heart {
-  position: absolute;
-  left: 86%;
-  top: 15%;
-  width: 17px;
-  height: 17px;
-  color: var(--gold);
+.wseal-open {
   opacity: 0;
-  transform: scale(.3) rotate(-14deg);
-  transform-origin: 50% 50%;
-  transition: opacity .22s ease .12s, transform .55s cubic-bezier(.22,1.4,.45,1) .12s;
+  transform: translateY(5px) scale(.9);
 }
-.welcome-btn:hover .wseal-heart { opacity: .5; }
+.welcome-btn:hover .wseal-closed { transform: translateY(-1px) scale(1.04); }
+.welcome-btn.is-opening .wseal-closed {
+  opacity: 0;
+  transform: translateY(-4px) scale(.85);
+}
+.welcome-btn.is-opening .wseal-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.wseal-card { opacity: 0; }
+.welcome-btn.is-opening .wseal-card { opacity: 1; }
+.wseal-heart { opacity: 0; transform-box: fill-box; transform-origin: center; }
 .welcome-btn.is-opening .wseal-heart {
   opacity: 1;
-  transform: scale(1.05) rotate(0deg);
+  animation: wseal-heart-pop .5s cubic-bezier(.34,1.6,.5,1);
 }
-.welcome-btn.is-opening .welcome-seal { transform: scale(1.05); }
+@keyframes wseal-heart-pop {
+  0%   { transform: scale(.4) translateY(6px); }
+  60%  { transform: scale(1.15) translateY(-2px); }
+  100% { transform: scale(1) translateY(0); }
+}
 @media (prefers-reduced-motion: reduce) {
   .welcome-overlay { transition: none; }
-  .welcome-seal .wseal-flap,
-  .welcome-seal .wseal-heart { transition: none; }
+  .welcome-seal svg,
+  .wseal-heart { transition: none; animation: none; }
 }
 
 /* =====================================================================
