@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
   <!-- El ?v= cambia cuando cambia el archivo, para que el navegador no sirva una
        versión vieja del caché (le pasaba al probar en local con file://). -->
-  <link rel="stylesheet" href="css/style.css?v=20261017">
+  <link rel="stylesheet" href="css/style.css?v=20261018">
 
   <style>
     /* Velo de entrada: cubre la página con el MISMO color papel del sobre
@@ -576,9 +576,11 @@
     </section>
 
     <!-- ======================= BOLETOS ASIGNADOS ======================= -->
-    <!-- Página propia antes del RSVP. Solo se ve si la invitación llega con
-         ?pases=N en la URL (lo resuelve initRsvp, en js/main.js). Sin parámetro
-         la invitación es genérica y la sección queda oculta.
+    <!-- Página propia antes del RSVP. Solo se ve si la invitación llega con el
+         código del invitado (?i=CODIGO, el que reparte el generador de links):
+         initRsvp, en js/main.js, le pide los pases asignados a la hoja de
+         Google. Sin código válido la invitación es genérica y la sección
+         queda oculta. El número de pases ya NO viaja en la URL.
          Acá NO se usa la clase .reveal a propósito: el observador de scroll
          corre cuando esta sección todavía está oculta, y el contenido podría
          quedarse con opacity:0. -->
@@ -608,6 +610,9 @@
 
           <p class="boleto-linea">Hemos asignado</p>
           <p class="boleto-numero" id="boletosNumero"></p>
+
+          <!-- Divisor del template (el mismo que usan las demás secciones). -->
+          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></div>
         </div>
       </div>
     </section>
@@ -840,6 +845,6 @@
   </audio>
 
   <script src="js/vendor/bootstrap.bundle.min.js"></script>
-  <script src="js/main.js?v=20261017"></script>
+  <script src="js/main.js?v=20261018"></script>
 </body>
 </html>

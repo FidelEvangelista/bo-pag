@@ -838,8 +838,11 @@ a:hover { color: var(--gold); }
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  min-height: 100svh;
+  /* Aire de la seccion: el mismo ritmo "tight" que ya trae el template
+     (.section--tight). Antes pedia 100vh, por eso el contenido quedaba
+     centrado en medio de una pantalla vacia. */
+  padding-top: clamp(3rem, 6vw, 5rem);
+  padding-bottom: clamp(3rem, 6vw, 5rem);
 }
 .section-boletos > .container { width: 100%; }
 

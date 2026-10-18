@@ -136,32 +136,72 @@
     // ======================== CONFIGURACIÓN ========================
     // Pega aquí la URL de tu Google Apps Script desplegado.
     // Ejemplo: 'https://script.google.com/macros/s/AKfycxxxxxxx/exec'
-    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymks9Pa7FIxPy2wRFYJdNyhqUvoi_OLlGmfql2W-efU3GkPWVdlRYog5pHiLd0477_/exec';
+    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyjBubUkTONbwH_j_k0gGGdIRSCu9FOdP8MlQGXd8v4Ftohdt5_jHWdSy7s6_4BfT6g/exec';
     // =================================================================
 
-    // Pases de la invitación: llegan como ?pases=N en la URL (ej. ...?pases=4).
-    // Ojo: el invitado puede editarlo en la barra de direcciones, así que es
-    // informativo (se muestra y se manda a la hoja); no autoriza nada por sí
-    // solo. Sin parámetro, o con un valor inválido, no se muestra nada.
-    var pases = parseInt(new URLSearchParams(window.location.search).get('pases'), 10);
-    if (!isFinite(pases) || pases < 1) pases = 0;
+    // Pases de la invitación: ya NO viajan en la URL. El link lleva el código
+    // del invitado (?i=abc12345) y los pases se piden a la hoja de Google
+    // (pestaña "Invitados"). Así los cambiás en la hoja y el link ya entregado
+    // muestra el número nuevo, y nadie puede retipear el número en la barra.
+    var codigoInvitado = (new URLSearchParams(window.location.search).get('i') || '').trim();
+    var pasesAsignados = 0;
 
     // Los pases se muestran en la sección "Boletos Asignados" (id="boletos"),
     // que es una página propia antes del RSVP.
     var seccionBoletos = document.getElementById('boletos');
     var numeroBoletos  = document.getElementById('boletosNumero');
 
-    // Atajo de vista previa para revisar el diseño en local: con #boletos al
-    // final de la URL (ej. invitacion.html#boletos) se muestra un ejemplo.
-    // Ojo: NO toca `pases`, así que el formulario sigue mandando el valor real
-    // del link (y vacío si no hay ninguno). Los invitados nunca llegan con #.
-    var pasesMostrados = (pases === 0 && window.location.hash === '#boletos') ? 2 : pases;
-
-    if (seccionBoletos && pasesMostrados > 0) {
+    function mostrarBoletos(cantidad) {
+      if (!seccionBoletos || cantidad < 1) return;
       if (numeroBoletos) {
-        numeroBoletos.textContent = pasesMostrados + (pasesMostrados === 1 ? ' Boleto' : ' Boletos');
+        numeroBoletos.textContent = cantidad + (cantidad === 1 ? ' Boleto' : ' Boletos');
       }
       seccionBoletos.hidden = false;
+    }
+
+    // Pide los pases de un invitado. Va con etiqueta <script> (JSONP) a
+    // propósito: Apps Script no manda cabeceras CORS, así que un fetch()
+    // normal no puede leer la respuesta.
+    function pedirInvitado(codigo, cb) {
+      var nombreCb = 'boletos_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      var terminado = false;
+      var etiqueta = document.createElement('script');
+
+      function terminar(datos) {
+        if (terminado) return;
+        terminado = true;
+        try { delete window[nombreCb]; } catch (err) { window[nombreCb] = undefined; }
+        if (etiqueta.parentNode) etiqueta.parentNode.removeChild(etiqueta);
+        cb(datos);
+      }
+
+      window[nombreCb] = function (datos) { terminar(datos || null); };
+      etiqueta.onerror = function () { terminar(null); };
+      etiqueta.src = SCRIPT_URL + '?i=' + encodeURIComponent(codigo) +
+        '&callback=' + nombreCb + '&t=' + Date.now();
+      document.head.appendChild(etiqueta);
+      setTimeout(function () { terminar(null); }, 8000);
+    }
+
+    // Atajo de vista previa para revisar el diseño en local: con #boletos al
+    // final de la URL (ej. invitacion.html#boletos) se muestra un ejemplo.
+    // Ojo: NO toca `pasesAsignados`, así que el formulario sigue mandando el
+    // valor real de la hoja (y vacío si no hay ninguno).
+    if (window.location.hash === '#boletos') mostrarBoletos(2);
+
+    if (codigoInvitado) {
+      var intentos = 0;
+      (function pedir() {
+        intentos++;
+        pedirInvitado(codigoInvitado, function (datos) {
+          if (datos && datos.ok && datos.p > 0) {
+            pasesAsignados = datos.p;
+            mostrarBoletos(datos.p);
+          } else if (intentos < 2) {
+            setTimeout(pedir, 2500); // un reintento: las redes móviles fallan
+          }
+        });
+      })();
     }
 
     // La línea de cupo dentro del formulario (#rsvpCupo) quedó oculta para no
@@ -169,8 +209,8 @@
     // volver a usarla, sacarle el atributo hidden y descomentar esto.
     //
     //   var cupo = document.getElementById('rsvpCupo');
-    //   if (cupo && pases > 0) {
-    //     cupo.textContent = 'Esta invitación es válida para ' + pases + (pases === 1 ? ' persona' : ' personas');
+    //   if (cupo && pasesAsignados > 0) {
+    //     cupo.textContent = 'Esta invitación es válida para ' + pasesAsignados + (pasesAsignados === 1 ? ' persona' : ' personas');
     //     cupo.hidden = false;
     //   }
 
@@ -188,7 +228,7 @@
         attending: attending ? attending.value : '',
         song:      document.getElementById('rsvp-song').value.trim(),
         note:      document.getElementById('rsvp-note').value.trim(),
-        pases:     pases > 0 ? pases : ''
+        pases:     pasesAsignados > 0 ? pasesAsignados : ''
       };
 
       var btn = form.querySelector('button[type="submit"]');
