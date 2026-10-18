@@ -139,6 +139,41 @@
     var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymks9Pa7FIxPy2wRFYJdNyhqUvoi_OLlGmfql2W-efU3GkPWVdlRYog5pHiLd0477_/exec';
     // =================================================================
 
+    // Pases de la invitación: llegan como ?pases=N en la URL (ej. ...?pases=4).
+    // Ojo: el invitado puede editarlo en la barra de direcciones, así que es
+    // informativo (se muestra y se manda a la hoja); no autoriza nada por sí
+    // solo. Sin parámetro, o con un valor inválido, no se muestra nada.
+    var pases = parseInt(new URLSearchParams(window.location.search).get('pases'), 10);
+    if (!isFinite(pases) || pases < 1) pases = 0;
+
+    // Los pases se muestran en la sección "Boletos Asignados" (id="boletos"),
+    // que es una página propia antes del RSVP.
+    var seccionBoletos = document.getElementById('boletos');
+    var numeroBoletos  = document.getElementById('boletosNumero');
+
+    // Atajo de vista previa para revisar el diseño en local: con #boletos al
+    // final de la URL (ej. invitacion.html#boletos) se muestra un ejemplo.
+    // Ojo: NO toca `pases`, así que el formulario sigue mandando el valor real
+    // del link (y vacío si no hay ninguno). Los invitados nunca llegan con #.
+    var pasesMostrados = (pases === 0 && window.location.hash === '#boletos') ? 2 : pases;
+
+    if (seccionBoletos && pasesMostrados > 0) {
+      if (numeroBoletos) {
+        numeroBoletos.textContent = pasesMostrados + (pasesMostrados === 1 ? ' Boleto' : ' Boletos');
+      }
+      seccionBoletos.hidden = false;
+    }
+
+    // La línea de cupo dentro del formulario (#rsvpCupo) quedó oculta para no
+    // decir lo mismo dos veces en la misma página. Sigue en el HTML: para
+    // volver a usarla, sacarle el atributo hidden y descomentar esto.
+    //
+    //   var cupo = document.getElementById('rsvpCupo');
+    //   if (cupo && pases > 0) {
+    //     cupo.textContent = 'Esta invitación es válida para ' + pases + (pases === 1 ? ' persona' : ' personas');
+    //     cupo.hidden = false;
+    //   }
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (!form.checkValidity()) {
@@ -152,7 +187,8 @@
         email:     document.getElementById('rsvp-email').value.trim(),
         attending: attending ? attending.value : '',
         song:      document.getElementById('rsvp-song').value.trim(),
-        note:      document.getElementById('rsvp-note').value.trim()
+        note:      document.getElementById('rsvp-note').value.trim(),
+        pases:     pases > 0 ? pases : ''
       };
 
       var btn = form.querySelector('button[type="submit"]');

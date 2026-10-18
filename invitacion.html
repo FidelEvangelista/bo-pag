@@ -17,7 +17,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
-  <link rel="stylesheet" href="css/style.css">
+  <!-- El ?v= cambia cuando cambia el archivo, para que el navegador no sirva una
+       versión vieja del caché (le pasaba al probar en local con file://). -->
+  <link rel="stylesheet" href="css/style.css?v=20261017">
 
   <style>
     /* Velo de entrada: cubre la página con el MISMO color papel del sobre
@@ -573,6 +575,43 @@
       </div>
     </section>
 
+    <!-- ======================= BOLETOS ASIGNADOS ======================= -->
+    <!-- Página propia antes del RSVP. Solo se ve si la invitación llega con
+         ?pases=N en la URL (lo resuelve initRsvp, en js/main.js). Sin parámetro
+         la invitación es genérica y la sección queda oculta.
+         Acá NO se usa la clase .reveal a propósito: el observador de scroll
+         corre cuando esta sección todavía está oculta, y el contenido podría
+         quedarse con opacity:0. -->
+    <section class="section section--blush section-boletos" id="boletos" aria-labelledby="boletos-title" hidden>
+      <div class="container">
+        <div class="section-head">
+          <h2 id="boletos-title">Boletos Asignados</h2>
+        </div>
+
+        <div class="boletos">
+          <div class="boleto-icono" aria-hidden="true">
+            <svg viewBox="0 0 128 72" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round">
+              <!-- Cuerpo del boleto con los dos recortes del troquelado -->
+              <path d="M12 12 H85 Q90 22 95 12 H116 A6 6 0 0 1 122 18 V54 A6 6 0 0 1 116 60 H95 Q90 50 85 60 H12 A6 6 0 0 1 6 54 V18 A6 6 0 0 1 12 12 Z"/>
+              <!-- Línea de corte del talón -->
+              <path d="M90 19 V53" stroke-dasharray="3 4" opacity=".55"/>
+              <!-- Ramita -->
+              <g transform="translate(17.4 22.8) scale(1.2)" opacity=".9">
+                <path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/>
+                <path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/>
+              </g>
+              <!-- Monograma en el talón -->
+              <text x="108.5" y="39" text-anchor="middle" fill="currentColor" stroke="none"
+                    font-family="Jost, Helvetica, Arial, sans-serif" font-size="8" letter-spacing=".5">A&amp;F</text>
+            </svg>
+          </div>
+
+          <p class="boleto-linea">Hemos asignado</p>
+          <p class="boleto-numero" id="boletosNumero"></p>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================ RSVP ============================ -->
     <section class="section" id="rsvp" aria-labelledby="rsvp-title">
       <div class="container">
@@ -585,6 +624,10 @@
 
         <div class="rsvp-wrap reveal">
           <div class="rsvp-card">
+            <!-- Línea de cupo: quedó OCULTA porque la sección "Boletos Asignados"
+                 ya lo dice. Sigue en el HTML por si se quiere volver atrás
+                 (ver initRsvp en js/main.js). -->
+            <p class="rsvp-cupo" id="rsvpCupo" hidden></p>
             <form class="rsvp-form" id="rsvpForm" novalidate>
               <div class="row g-3">
                 <div class="col-md-6">
@@ -797,6 +840,6 @@
   </audio>
 
   <script src="js/vendor/bootstrap.bundle.min.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/main.js?v=20261017"></script>
 </body>
 </html>

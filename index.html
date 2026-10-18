@@ -771,9 +771,11 @@
         document.body.classList.add('stage-3');
       }, SEAL_FADE_AT_MS));
 
-      // Fin del efecto -> entrar a la página de inicio de la invitación
+      // Fin del efecto -> entrar a la página de inicio de la invitación.
+      // location.search se arrastra a propósito: el invitado puede entrar acá con
+      // un cupo en la URL (ej. ?pases=4) y la invitación tiene que recibirlo.
       timers.push(setTimeout(() => {
-        window.location.href = NEXT_PAGE;
+        window.location.href = NEXT_PAGE + location.search + location.hash;
       }, NEXT_DELAY_MS));
     }
 
