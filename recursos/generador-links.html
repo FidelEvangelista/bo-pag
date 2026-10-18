@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generador de links — Invitación Astrid &amp; Fidel</title>
+<style>
+  :root{
+    --ivory:#F7EADD; --blush-deep:#E4D5BC; --wine:#1E2E4F; --wine-deep:#0D1B2A;
+    --gold:#A67C38; --gold-soft:#D6C3A3; --ink:#1B2333; --muted:#5B6981;
+    --ff-body:"Jost","Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:clamp(1rem,4vw,2.4rem);
+    background:var(--ivory);color:var(--ink);
+    font-family:var(--ff-body);
+  }
+  .wrap{max-width:1000px;margin:0 auto}
+  h1{font-size:1.5rem;font-weight:500;margin:0 0 .3rem;color:var(--wine)}
+  .lead{color:var(--muted);font-size:.9rem;margin:0 0 1.4rem}
+  .panel{background:#fff;border:1px solid var(--blush-deep);border-radius:3px;padding:1.3rem}
+  label{display:block;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+  input,textarea{
+    width:100%;font-family:var(--ff-body);font-size:.95rem;color:var(--ink);
+    border:1px solid var(--blush-deep);border-radius:3px;padding:.7rem .8rem;background:#fff;
+  }
+  textarea{min-height:190px;resize:vertical;font-family:ui-monospace,Consolas,monospace;font-size:.88rem;line-height:1.5}
+  input:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 .18rem rgba(166,124,56,.16)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1rem;margin-top:1.1rem}
+  .hint{color:var(--muted);font-size:.78rem;line-height:1.7;margin:.55rem 0 0}
+  .hint b{color:var(--wine);font-weight:500}
+  button{
+    font-family:var(--ff-body);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;
+    padding:.75rem 1.1rem;border:1px solid var(--wine);background:var(--wine);color:#fff;
+    border-radius:3px;cursor:pointer;transition:background .2s,border-color .2s,color .2s;
+  }
+  button:hover{background:var(--wine-deep)}
+  button.ghost{background:transparent;color:var(--wine);border-color:var(--gold-soft)}
+  button.ghost:hover{background:rgba(166,124,56,.08)}
+  button.mini{padding:.42rem .62rem;font-size:.64rem;letter-spacing:.08em}
+  .acciones{margin-top:1.2rem;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+  #resultado{margin-top:1.6rem}
+  #resultado[hidden]{display:none}
+  .totales{
+    display:flex;gap:1.6rem;flex-wrap:wrap;align-items:baseline;
+    background:#fff;border:1px solid var(--gold-soft);border-radius:3px;
+    padding:.85rem 1rem;margin-bottom:.8rem;font-size:.82rem;color:var(--muted);
+  }
+  .totales b{font-size:1.15rem;font-weight:500;color:var(--gold);margin-right:.35rem}
+  .tabla-scroll{overflow-x:auto;border:1px solid var(--blush-deep);border-radius:3px;background:#fff}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:.6rem .7rem;border-bottom:1px solid var(--blush-deep);font-size:.86rem;vertical-align:middle}
+  th{font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:var(--ivory);white-space:nowrap}
+  tr:last-child td{border-bottom:0}
+  td.num{width:94px;text-align:center}
+  td.num input.pases-input{
+    width:100%;padding:.3rem .35rem;text-align:center;
+    font-family:var(--ff-body);font-size:.9rem;color:var(--ink);
+    border:1px solid var(--blush-deep);border-radius:3px;background:#fff;
+  }
+  td.num input.pases-input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 .16rem rgba(166,124,56,.16)}
+  td.link{font-family:ui-monospace,Consolas,monospace;font-size:.75rem;color:var(--muted);word-break:break-all}
+  td.acc{white-space:nowrap;width:1%;text-align:right}
+  .pill{
+    display:inline-block;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+    padding:.12rem .45rem;border:1px solid var(--gold-soft);border-radius:99px;color:var(--gold);
+  }
+  .pill.gris{border-color:var(--blush-deep);color:var(--muted)}
+  .pill[hidden]{display:none}
+  @media (max-width:720px){
+    td.link{display:none}
+    th:nth-child(3){display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Generador de links</h1>
+  <p class="lead">Escribí un invitado por línea y te devuelve el link listo para mandarle. El link no lleva el nombre: solo el número de pases.</p>
+
+  <div class="panel">
+    <label for="lista">Lista de invitados</label>
+    <textarea id="lista" spellcheck="false" placeholder="Familia Pérez, 4&#10;Ana y Luis, 2&#10;Sofía Ramírez&#10;Los Ramírez, 0&#10;# esta línea se ignora"></textarea>
+    <p class="hint">
+      <b>Familia Pérez, 4</b> — cuatro pases &nbsp;·&nbsp;
+      <b>Sofía Ramírez</b> — sin número, usa los pases por defecto &nbsp;·&nbsp;
+      <b>Los Ramírez, 0</b> — link sin cupo (invitación genérica) &nbsp;·&nbsp;
+      <b># ...</b> — la línea se ignora.
+    </p>
+
+    <div class="grid">
+      <div>
+        <label for="porDefecto">Pases por defecto</label>
+        <input id="porDefecto" type="number" min="0" step="1" value="2">
+      </div>
+      <div>
+        <label for="base">URL base</label>
+        <input id="base" type="url" spellcheck="false" value="https://fidelevangelista.github.io/bo-pag/">
+      </div>
+      <div>
+        <label for="mensaje">Texto para WhatsApp</label>
+        <input id="mensaje" type="text" value="¡Hola! Con mucho cariño te compartimos la invitación:">
+      </div>
+    </div>
+    <p class="hint">
+      Con la URL base del sitio, el link queda <b>…/bo-pag/?pases=4</b> (entra por el sobre y de ahí pasa a la invitación).
+      Para probar sin subir nada, poné la ruta local: <b>file:///C:/Users/PC/Boda/Invitacion/everly/index.html</b>
+    </p>
+
+    <div class="acciones">
+      <button id="btnGenerar" type="button">Generar links</button>
+      <button id="btnCopiarTodos" class="ghost" type="button" hidden>Copiar todos</button>
+      <span id="aviso" class="hint"></span>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       Lista de invitados desde la hoja de Google (pestaña "Invitados").
+       El generador de siempre queda intacto abajo: esta tabla es la que se
+       usa para repartir los links, porque los pases viven en la hoja.
+       ===================================================================== -->
+  <div class="panel" id="hoja">
+    <h1 style="font-size:1.15rem">Invitados (desde la hoja de Google)</h1>
+    <p class="hint">
+      Esta tabla es la que se usa para repartir. Los pases se cambian <b>en la hoja</b> (pestaña <b>Invitados</b>), no acá:
+      el link ya entregado muestra siempre lo que diga la hoja. El link queda <b>…/bo-pag/?i=CODIGO</b> y entra por el sobre.
+      La primera vez te pide la clave del listado; queda guardada <b>en este navegador</b>.
+    </p>
+
+    <div id="hojaClave" hidden>
+      <div class="grid">
+        <div>
+          <label for="hojaClaveInput">Clave del listado</label>
+          <input id="hojaClaveInput" type="password" autocomplete="off" spellcheck="false" placeholder="La clave de tu script">
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:.6rem;flex-wrap:wrap">
+          <button id="btnHojaClave" type="button">Guardar clave</button>
+          <button id="btnHojaOlvidar" class="ghost" type="button" hidden>Olvidar</button>
+        </div>
+      </div>
+      <p class="hint">
+        Es la misma clave que está en el script de la hoja. Se guarda <b>solo en este navegador</b>:
+        esta página no lleva la clave escrita, así que nadie más puede leer tu lista con ella.
+      </p>
+    </div>
+
+    <div class="acciones">
+      <button id="btnHoja" type="button">Traer la lista de la hoja</button>
+      <button id="btnHojaTodos" class="ghost" type="button" hidden>Copiar todos los links</button>
+      <span id="hojaAviso" class="hint"></span>
+    </div>
+
+    <div class="totales" id="hojaTotales" hidden></div>
+
+    <div class="tabla-scroll" id="hojaTabla" hidden>
+      <table>
+        <thead>
+          <tr>
+            <th>Invitado</th>
+            <th>Pases</th>
+            <th>Link</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="hojaCuerpo"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+
+  <section id="resultado" hidden>
+    <div class="totales" id="totales"></div>
+    <div class="tabla-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Invitado</th>
+            <th>Pases</th>
+            <th>Link</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="cuerpo"></tbody>
+      </table>
+    </div>
+
+    <p class="hint">El número de pases de cada fila se puede cambiar: el link se rearma al instante. Un <b>0</b> deja esa invitación sin cupo, y el cambio queda guardado en la lista de arriba.</p>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var lista          = document.getElementById('lista');
+  var porDefecto     = document.getElementById('porDefecto');
+  var base           = document.getElementById('base');
+  var mensaje        = document.getElementById('mensaje');
+  var resultado      = document.getElementById('resultado');
+  var cuerpo         = document.getElementById('cuerpo');
+  var totales        = document.getElementById('totales');
+  var aviso          = document.getElementById('aviso');
+  var btnGenerar     = document.getElementById('btnGenerar');
+  var btnCopiarTodos = document.getElementById('btnCopiarTodos');
+
+  var links = [];
+  var CLAVE = 'generador-links-boda';
+
+  // Una línea por invitado. El número de pases va al final, después de una coma,
+  // punto y coma, tabulación o barra: "Familia Pérez, 4". Si no hay número, se
+  // usan los pases por defecto. Un 0 genera el link sin cupo.
+  function parsearLinea(linea, defecto) {
+    var t = linea.trim();
+    if (t === '' || t.charAt(0) === '#') return null;
+
+    if (/^\d+$/.test(t)) {
+      return { nombre: 'Invitado (sin nombre)', nombreLista: '', pases: parseInt(t, 10), explicito: true };
+    }
+
+    var partes = t.split(/[,;\t|]/);
+    var ultimo = partes[partes.length - 1].trim();
+    if (partes.length > 1 && /^\d+$/.test(ultimo)) {
+      var nombre = partes.slice(0, -1).join(',').trim();
+      return { nombre: nombre || 'Invitado (sin nombre)', nombreLista: nombre, pases: parseInt(ultimo, 10), explicito: true };
+    }
+
+    return { nombre: t, nombreLista: t, pases: defecto, explicito: false };
+  }
+
+  // Arma el link de un invitado: le agrega ?pases=N a la URL base.
+  // Con 0 pases devuelve el link sin cupo (invitación genérica).
+  function urlConPases(pases) {
+    var b = base.value.trim();
+    if (b === '') return '';
+    if (pases > 0) {
+      b += (b.indexOf('?') === -1 ? '?' : '&') + 'pases=' + pases;
+    }
+    return b;
+  }
+
+  function generar() {
+    var defecto = parseInt(porDefecto.value, 10);
+    if (!isFinite(defecto) || defecto < 0) defecto = 0;
+
+    var lineas = lista.value.split(/\r?\n/);
+    links = [];
+    for (var i = 0; i < lineas.length; i++) {
+      var it = parsearLinea(lineas[i], defecto);
+      if (!it) continue;
+      it.linea = i;                    // de qué línea de la lista salió
+      it.link = urlConPases(it.pases);
+      links.push(it);
+    }
+
+    if (links.length === 0) {
+      limpiar();
+      aviso.textContent = 'Pegá al menos un invitado para generar los links.';
+      return;
+    }
+    if (base.value.trim() === '') {
+      limpiar();
+      aviso.textContent = 'Falta la URL base.';
+      return;
+    }
+
+    aviso.textContent = '';
+    btnCopiarTodos.hidden = false;
+    resultado.hidden = false;
+    pintar();
+    guardar();
+  }
+
+  function limpiar() {
+    resultado.hidden = true;
+    btnCopiarTodos.hidden = true;
+    cuerpo.innerHTML = '';
+    totales.innerHTML = '';
+    links = [];
+  }
+
+  function pintar() {
+    cuerpo.innerHTML = '';
+
+    for (var i = 0; i < links.length; i++) {
+      (function (it) {
+        var tr = document.createElement('tr');
+
+        // Invitado
+        var td1 = document.createElement('td');
+        td1.textContent = it.nombre;
+        if (!it.explicito) {
+          td1.appendChild(document.createTextNode(' '));
+          var pi = document.createElement('span');
+          pi.className = 'pill gris';
+          pi.textContent = 'por defecto';
+          td1.appendChild(pi);
+          it.pillDefecto = pi;
+        }
+        tr.appendChild(td1);
+
+        // Pases: editable, por si después se cambia de opinión con el número.
+        var td2 = document.createElement('td');
+        td2.className = 'num';
+
+        var entrada = document.createElement('input');
+        entrada.type = 'number';
+        entrada.min = '0';
+        entrada.step = '1';
+        entrada.className = 'pases-input';
+        entrada.value = it.pases;
+        entrada.setAttribute('aria-label', 'Boletos para ' + it.nombre + ' (0 = link sin cupo)');
+        td2.appendChild(entrada);
+
+        var pg = document.createElement('span');
+        pg.className = 'pill gris';
+        pg.textContent = 'sin cupo';
+        pg.hidden = it.pases > 0;
+        td2.appendChild(pg);
+
+        tr.appendChild(td2);
+
+        // Link
+        var td3 = document.createElement('td');
+        td3.className = 'link';
+        td3.textContent = it.link;
+        tr.appendChild(td3);
+
+        // Acciones
+        var td4 = document.createElement('td');
+        td4.className = 'acc';
+
+        var b1 = document.createElement('button');
+        b1.type = 'button';
+        b1.className = 'mini ghost';
+        b1.textContent = 'Copiar';
+        b1.addEventListener('click', function () { copiar(it.link, b1); });
+        td4.appendChild(b1);
+
+        td4.appendChild(document.createTextNode(' '));
+
+        var b2 = document.createElement('button');
+        b2.type = 'button';
+        b2.className = 'mini';
+        b2.textContent = 'WhatsApp';
+        b2.addEventListener('click', function () { abrirWhatsApp(it.link); });
+        td4.appendChild(b2);
+
+        tr.appendChild(td4);
+
+        // Al cambiar el número, se rearma el link de esa fila.
+        entrada.addEventListener('input', function () {
+          cambiarPases(it, entrada, pg, td3);
+        });
+
+        cuerpo.appendChild(tr);
+      })(links[i]);
+    }
+
+    actualizarTotales();
+  }
+
+  function actualizarTotales() {
+    var totalPases = 0;
+    var sinCupo = 0;
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].pases > 0) totalPases += links[i].pases;
+      else sinCupo++;
+    }
+
+    totales.innerHTML = '';
+    totales.appendChild(dato(links.length, 'invitaciones'));
+    totales.appendChild(dato(totalPases, 'pases en total'));
+    if (sinCupo > 0) totales.appendChild(dato(sinCupo, 'sin cupo'));
+  }
+
+  // Cambiar los pases de una fila rearma el link al instante y deja el cambio
+  // escrito en la lista de arriba, así al refrescar no se pierde.
+  function cambiarPases(it, entrada, pg, tdLink) {
+    var n = parseInt(entrada.value, 10);
+    if (!isFinite(n) || n < 0) n = 0;
+
+    it.pases = n;
+    it.explicito = true;
+    it.link = urlConPases(n);
+
+    tdLink.textContent = it.link;
+    pg.hidden = n > 0;
+
+    if (it.pillDefecto) {
+      it.pillDefecto.parentNode.removeChild(it.pillDefecto);
+      it.pillDefecto = null;
+    }
+
+    sincronizarLinea(it, n);
+    actualizarTotales();
+    guardar();
+  }
+
+  function sincronizarLinea(it, pases) {
+    if (!it.nombreLista) return;    // línea con solo un número: no se toca
+    var lineas = lista.value.split(/\r?\n/);
+    if (it.linea === undefined || it.linea < 0 || it.linea >= lineas.length) return;
+    lineas[it.linea] = it.nombreLista + ', ' + pases;
+    lista.value = lineas.join('\n');
+  }
+
+  function dato(valor, etiqueta) {
+    var span = document.createElement('span');
+    var b = document.createElement('b');
+    b.textContent = valor;
+    span.appendChild(b);
+    span.appendChild(document.createTextNode(etiqueta));
+    return span;
+  }
+
+  function abrirWhatsApp(link) {
+    var texto = mensaje.value.trim();
+    var cuerpoMsg = texto === '' ? link : texto + ' ' + link;
+    window.open('https://wa.me/?text=' + encodeURIComponent(cuerpoMsg), '_blank', 'noopener');
+  }
+
+  function copiar(texto, btn) {
+    var original = btn.textContent;
+
+    function listo() {
+      btn.textContent = 'Copiado';
+      setTimeout(function () { btn.textContent = original; }, 1200);
+    }
+
+    // Sin portapapeles (o bloqueado): se selecciona el texto para que lo copien a mano.
+    function manual() {
+      var ta = document.createElement('textarea');
+      ta.value = texto;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-2000px';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { listo = document.execCommand('copy'); } catch (e) { listo = false; }
+      document.body.removeChild(ta);
+      if (listo) { listo2(); } else { window.prompt('Copiá el link:', texto); }
+    }
+
+    function listo2() { listo(); }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(listo, manual);
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = texto;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      if (listo) { listo(); } else { window.prompt('Copiá el link:', texto); }
+    }
+  }
+
+  function guardar() {
+    try {
+      localStorage.setItem(CLAVE, JSON.stringify({
+        lista: lista.value,
+        porDefecto: porDefecto.value,
+        base: base.value,
+        mensaje: mensaje.value
+      }));
+    } catch (e) { /* sin almacenamiento: se pierde al recargar, no es grave */ }
+  }
+
+  function restaurar() {
+    try {
+      var crudo = localStorage.getItem(CLAVE);
+      if (!crudo) return;
+      var d = JSON.parse(crudo);
+      if (d.lista) lista.value = d.lista;
+      if (d.porDefecto !== undefined) porDefecto.value = d.porDefecto;
+      if (d.base) base.value = d.base;
+      if (d.mensaje) mensaje.value = d.mensaje;
+    } catch (e) { /* nada guardado */ }
+  }
+
+  // Al abrir recupera lo último que se escribió (si el navegador lo permite) y
+  // vuelve a generar la tabla, para no tener que pegar la lista otra vez.
+  restaurar();
+  if (lista.value.trim() !== '') generar();
+
+  document.getElementById('btnGenerar').addEventListener('click', generar);
+  btnCopiarTodos.addEventListener('click', function () {
+    var texto = links.map(function (it) { return it.nombre + '\t' + it.link; }).join('\n');
+    copiar(texto, btnCopiarTodos);
+  });
+})();
+</script>
+
+<script>
+/* =====================================================================
+   Lista de invitados desde la hoja de Google (pestaña "Invitados").
+
+   Capa aditiva: no toca el generador de siempre. Lee la lista
+   (nombre + pases + código) y arma el link de cada persona:
+       <URL base>?i=CODIGO
+   El invitado entra por el sobre y la invitación le pide los pases a la
+   hoja. Los pases se editan en la hoja, nunca en la URL.
+   ===================================================================== */
+(function () {
+  'use strict';
+
+  var SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbyjBubUkTONbwH_j_k0gGGdIRSCu9FOdP8MlQGXd8v4Ftohdt5_jHWdSy7s6_4BfT6g/exec';
+
+  // La clave del listado ya NO vive en este archivo: esta página se publica y
+  // cualquiera podría abrirla. Se pide una vez y queda guardada en el
+  // navegador de este dispositivo (localStorage), nunca en el código.
+  var ALMACEN_CLAVE = 'generador-links-clave-lista';
+
+  var base     = document.getElementById('base');
+  var btn      = document.getElementById('btnHoja');
+  var btnTodos = document.getElementById('btnHojaTodos');
+  var aviso    = document.getElementById('hojaAviso');
+  var totales  = document.getElementById('hojaTotales');
+  var tabla    = document.getElementById('hojaTabla');
+  var cuerpo   = document.getElementById('hojaCuerpo');
+  var cajaClave = document.getElementById('hojaClave');
+  var campoClave = document.getElementById('hojaClaveInput');
+  var btnClave = document.getElementById('btnHojaClave');
+  var btnOlvidar = document.getElementById('btnHojaOlvidar');
+
+  if (!base || !btn || !cuerpo) return;
+
+  var invitados = [];
+  var claveEnMemoria = ''; // respaldo para cuando el navegador no deja guardar (modo privado)
+
+  function claveActual() {
+    if (claveEnMemoria) return claveEnMemoria;
+    try { return (localStorage.getItem(ALMACEN_CLAVE) || '').trim(); } catch (e) { return ''; }
+  }
+
+  function guardarClave(valor) {
+    try {
+      if (valor) localStorage.setItem(ALMACEN_CLAVE, valor);
+      else localStorage.removeItem(ALMACEN_CLAVE);
+    } catch (e) { /* sin permiso: igual funciona mientras la pestaña esté abierta */ }
+  }
+
+  // El campo de la clave aparece solo cuando hace falta (primera vez o clave mal).
+  function mostrarClave(mostrar) {
+    if (!cajaClave) return;
+    cajaClave.hidden = !mostrar;
+    if (!mostrar) return;
+    campoClave.value = '';
+    btnOlvidar.hidden = !claveActual();
+    try { campoClave.focus(); } catch (e) { /* da igual */ }
+  }
+
+  var invitados = [];
+
+  // El link de cada invitado: la URL base + ?i=CODIGO
+  function urlDe(codigo) {
+    var b = (base.value || '').trim();
+    if (!b) return '';
+    var limpio = b.replace(/[?&]pases=\d+/, ''); // por si quedó una base vieja
+    return limpio + (limpio.indexOf('?') === -1 ? '?' : '&') + 'i=' + encodeURIComponent(codigo);
+  }
+
+  // JSONP a propósito: Apps Script no manda cabeceras CORS, así que un
+  // fetch() normal no podría leer la respuesta.
+  function pedirLista(cb) {
+    var clave = claveActual();
+    if (!clave) { cb(null); return; }
+
+    var nombreCb = 'hoja_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    var terminado = false;
+    var etiqueta = document.createElement('script');
+
+    function terminar(datos) {
+      if (terminado) return;
+      terminado = true;
+      try { delete window[nombreCb]; } catch (e) { window[nombreCb] = undefined; }
+      if (etiqueta.parentNode) etiqueta.parentNode.removeChild(etiqueta);
+      cb(datos);
+    }
+
+    window[nombreCb] = function (datos) { terminar(datos || null); };
+    etiqueta.onerror = function () { terminar(null); };
+    etiqueta.src = SCRIPT_URL + '?action=list&key=' + encodeURIComponent(clave) +
+      '&callback=' + nombreCb + '&t=' + Date.now();
+    document.head.appendChild(etiqueta);
+    setTimeout(function () { terminar(null); }, 12000);
+  }
+
+  function traer() {
+    if (!claveActual()) {
+      mostrarClave(true);
+      aviso.textContent = 'Falta la clave del listado: escribila y tocá "Guardar clave".';
+      return;
+    }
+
+    aviso.textContent = 'Leyendo la hoja…';
+    btn.disabled = true;
+
+    pedirLista(function (datos) {
+      btn.disabled = false;
+
+      if (!datos || !datos.ok) {
+        var error = (datos && datos.error) ? String(datos.error) : '';
+        if (/clave/i.test(error)) {
+          // La clave guardada no sirve: se olvida y se pide de nuevo.
+          claveEnMemoria = '';
+          guardarClave('');
+          mostrarClave(true);
+          aviso.textContent = 'La clave no es correcta. Escribila otra vez.';
+          return;
+        }
+        aviso.textContent = 'No pude leer la hoja. ¿Hay internet? ¿El script sigue publicado?';
+        return;
+      }
+
+      mostrarClave(false);
+      invitados = datos.invitados || [];
+      if (!invitados.length) {
+        aviso.textContent = 'La hoja está vacía: cargá los invitados en la pestaña "Invitados".';
+        tabla.hidden = true;
+        totales.hidden = true;
+        return;
+      }
+
+      aviso.textContent = (datos.avisos && datos.avisos.length) ? datos.avisos.join(' ') : '';
+      pintar();
+    });
+  }
+
+  function pintar() {
+    cuerpo.innerHTML = '';
+    var conCodigo = 0;
+    var totalPases = 0;
+
+    invitados.forEach(function (g) {
+      if (g.c) conCodigo++;
+      totalPases += (g.p || 0);
+
+      var tr = document.createElement('tr');
+
+      var tdNombre = document.createElement('td');
+      tdNombre.textContent = g.n || '(sin nombre)';
+
+      var tdPases = document.createElement('td');
+      tdPases.className = 'num';
+      tdPases.textContent = g.p > 0 ? String(g.p) : '—';
+
+      var tdLink = document.createElement('td');
+      tdLink.className = 'link';
+      tdLink.textContent = g.c ? urlDe(g.c) : 'sin código (abrí "Generar códigos" en la hoja)';
+
+      var tdAcc = document.createElement('td');
+      if (g.c) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ghost';
+        b.textContent = 'Copiar';
+        b.addEventListener('click', function () { copiar(urlDe(g.c), b, 'Copiar'); });
+        tdAcc.appendChild(b);
+      }
+
+      tr.appendChild(tdNombre);
+      tr.appendChild(tdPases);
+      tr.appendChild(tdLink);
+      tr.appendChild(tdAcc);
+      cuerpo.appendChild(tr);
+    });
+
+    tabla.hidden = false;
+    totales.hidden = false;
+    totales.innerHTML = '<span><b>' + invitados.length + '</b> invitaciones</span>' +
+      '<span><b>' + totalPases + '</b> pases asignados</span>' +
+      '<span><b>' + conCodigo + '</b> con código</span>';
+    btnTodos.hidden = conCodigo === 0;
+  }
+
+  function copiar(texto, boton, textoOriginal) {
+    function listo() {
+      boton.textContent = '¡Copiado!';
+      setTimeout(function () { boton.textContent = textoOriginal; }, 1200);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(listo, function () { copiarViejo(texto); listo(); });
+    } else {
+      copiarViejo(texto);
+      listo();
+    }
+  }
+
+  function copiarViejo(texto) {
+    var area = document.createElement('textarea');
+    area.value = texto;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.top = '-1000px';
+    document.body.appendChild(area);
+    area.select();
+    try { document.execCommand('copy'); } catch (e) { /* sin permiso: no pasa nada */ }
+    document.body.removeChild(area);
+  }
+
+  btn.addEventListener('click', traer);
+
+  btnTodos.addEventListener('click', function () {
+    var texto = invitados.filter(function (g) { return g.c; })
+      .map(function (g) { return (g.n || '') + '\t' + urlDe(g.c); })
+      .join('\n');
+    copiar(texto, btnTodos, 'Copiar todos los links');
+  });
+
+  // Guardar la clave del listado: una sola vez por navegador.
+  if (btnClave && campoClave) {
+    btnClave.addEventListener('click', function () {
+      var valor = (campoClave.value || '').trim();
+      if (!valor) { aviso.textContent = 'La clave está vacía.'; return; }
+      claveEnMemoria = valor;
+      guardarClave(valor);
+      mostrarClave(false);
+      traer();
+    });
+
+    // Enter guarda y lee, sin tocar el mouse.
+    campoClave.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); btnClave.click(); }
+    });
+  }
+
+  if (btnOlvidar) {
+    btnOlvidar.addEventListener('click', function () {
+      claveEnMemoria = '';
+      guardarClave('');
+      invitados = [];
+      cuerpo.innerHTML = '';
+      tabla.hidden = true;
+      totales.hidden = true;
+      btnTodos.hidden = true;
+      mostrarClave(true);
+      aviso.textContent = 'Listo: la clave se borró de este navegador.';
+    });
+  }
+
+  // Al abrir: si este navegador ya tiene la clave, lee la hoja sola. Si no, la
+  // pide (la página puede ser pública y no lleva la clave escrita).
+  if (claveActual()) {
+    traer();
+  } else {
+    mostrarClave(true);
+    aviso.textContent = 'Escribí la clave del listado: queda guardada en este navegador.';
+  }
+})();
+</script>
+</body>
+</html>
