@@ -196,8 +196,6 @@
   function initMusic() {
     var btn = document.getElementById('musicToggle');
     var audio = document.getElementById('weddingMusic');
-    var overlay = document.getElementById('welcomeOverlay');
-    var welcomeBtn = document.getElementById('welcomeBtn');
     if (!btn || !audio) return;
 
     var playing = false;
@@ -218,20 +216,6 @@
           if (step >= 100) clearInterval(fadeTimer);
         }, FADE_IN_MS / 100);
       }).catch(function () {});
-    }
-
-    // Clic en "Entrar" del overlay → música + ocultar overlay
-    if (welcomeBtn && overlay) {
-      document.body.style.overflow = 'hidden';
-      window.scrollTo(0, 0);
-
-      welcomeBtn.addEventListener('click', function () {
-        welcomeBtn.classList.add('is-opening');
-        playMusic();
-        overlay.classList.add('is-hidden');
-        document.body.style.overflow = '';
-        window.scrollTo({ top: 0, left: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
-      });
     }
 
     // Botón play/pause manual

@@ -1,592 +1,717 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Astrid &amp; Fidel — 9 de Enero, 2027 | Invitación de Boda</title>
-  <meta name="description" content="Astrid &amp; Fidel se casan el 9 de enero de 2027 en Acapulco, Guerrero. Confirmación, detalles del evento, registro y más.">
-  <meta name="keywords" content="invitación de boda, Astrid y Fidel, RSVP, boda 2027">
-
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Astrid &amp; Fidel — Nos Vamos a Casar">
-  <meta property="og:description" content="Acompáñanos el 9 de enero de 2027 en Acapulco, Guerrero para celebrar nuestra boda.">
-  <meta property="og:image" content="img/hero.jpg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Astrid &amp; Fidel — 9 de Enero, 2027</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500&family=Montserrat:wght@400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
-  <link rel="stylesheet" href="css/style.css">
+  <!-- La invitación se pide por adelantado: cuando el sobre termine de abrir,
+       la página ya está cacheada y el salto no destella en blanco. -->
+  <link rel="prefetch" href="invitacion.html">
 
   <style>
-    html.fonts-loading .welcome-inner { opacity: 0; }
-  </style>
-  <script>
-    (function () {
-      document.documentElement.classList.add('fonts-loading');
-      if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(function () {
-          document.documentElement.classList.remove('fonts-loading');
-        });
-      } else {
-        document.documentElement.classList.remove('fonts-loading');
-      }
-    })();
-  </script>
+    /* Tokens del sitio (mismos que css/style.css) para que la revelación
+       coincida con el hero real de invitacion.html. */
+    :root {
+      --wine:       #1E2E4F;
+      --wine-deep:  #0D1B2A;
+      --gold:       #A67C38;
+      --gold-soft:  #D6C3A3;
+      --ff-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+      --ff-script:  "Pinyon Script", "Cormorant Garamond", cursive;
+      --ff-body:    "Jost", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Montserrat', sans-serif;
+      background-color: #f6f6f4;
+    }
+
+    /* Textura de papel lino diagonal idéntica a la imagen */
+    .paper-texture {
+      background-color: #f6f6f4;
+      background-image: 
+        repeating-linear-gradient(
+          125deg,
+          rgba(0, 0, 0, 0.018) 0px,
+          rgba(0, 0, 0, 0.018) 1px,
+          transparent 1px,
+          transparent 3px
+        ),
+        repeating-linear-gradient(
+          35deg,
+          rgba(255, 255, 255, 0.65) 0px,
+          rgba(255, 255, 255, 0.65) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+    }
+
+    /* =========================================================
+       CAPA DEL SOBRE HORIZONTAL (PANTALLA COMPLETA PC)
+       ========================================================= */
+    .envelope-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      perspective: 1800px;
+      overflow: hidden;
+      transition: opacity 0.45s ease;
+    }
+
+    /* Papel base del sobre */
+    .envelope-base {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* Pliegues del sobre abierto (el "bolsillo": solapas laterales + inferior).
+       Geometría tomada de recursos/sobre_invitacion/sobre abierto cerrado.html.
+       Va ENTRE el papel base y la solapa, y arranca invisible: en reposo el
+       sobre se ve igual que antes. Al abrirse se revela apenas empieza a
+       levantarse la solapa, así que los pliegues van apareciendo a medida que
+       la solapa se pliega hacia arriba (en vez de quedar un papel blanco liso). */
+    .envelope-open {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    body.stage-1 .envelope-open {
+      opacity: 1;
+    }
+
+    /* Contenedor de la solapa superior con sombra realista proyectada hacia abajo */
+    .flap-shadow-wrap {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      transform-origin: top center;
+      filter: 
+        drop-shadow(0px 6px 7px rgba(0, 0, 0, 0.20))
+        drop-shadow(0px 14px 22px rgba(0, 0, 0, 0.08))
+        drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.15));
+      transition: 
+        transform 2.6s cubic-bezier(0.33, 0, 0.67, 1),
+        opacity 0.2s ease 1.3s;
+    }
+
+    /* Solapa triangular horizontal superior con punta inferior redondeada */
+    .envelope-flap {
+      width: 100%;
+      height: 100%;
+      clip-path: url(#horizontalFlapClip);
+    }
+
+    /* =========================================================
+       SELLO DE LACRE Y ETIQUETA "¡Toca Aquí!"
+       ========================================================= */
+    .seal-wrapper {
+      position: fixed;
+      /* Posicionado dentro de la solapa superior, justo arriba de la punta redondeada */
+      left: 50%;
+      top: 49%;
+      transform: translate(-50%, -50%);
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      /* El fundido va corto y SIN espera: una vez que el sobre está abierto no
+         hay que quedarse esperando (ver stage-3). El transform queda declarado
+         por si algún día se reactiva un movimiento del sello. */
+      transition:
+        opacity 0.15s ease,
+        transform 2.6s cubic-bezier(0.33, 0, 0.67, 1);
+    }
+
+    /* Se navega con el teclado: es un div con role="button", hay que poder enfocarlo. */
+    .seal-wrapper:focus-visible {
+      outline: 3px solid #ffffff;
+      outline-offset: 8px;
+      border-radius: 6px;
+    }
+
+    /* Cartel negro "¡Toca Aquí!" */
+    .tooltip {
+      background-color: #1e2024;
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      padding: 8px 16px;
+      border-radius: 5px;
+      margin-bottom: 14px;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+      animation: floatTooltip 1.8s infinite ease-in-out;
+      /* El transform lo maneja la animación floatTooltip (una animación pisa al
+         transition); acá importa el fundido, con el MISMO ritmo que el sello
+         para que el CTA se vaya de una sola pieza. Sin espera, igual que él. */
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .tooltip::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 7px solid #1e2024;
+    }
+
+    @keyframes floatTooltip {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    /* Sello de lacre SVG en relieve */
+    .wax-seal-svg {
+      width: 170px;
+      height: 170px;
+      filter: 
+        drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.18))
+        drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.14));
+      transition: transform 0.25s ease;
+      transform-origin: center;
+      /* "Respiración": crece y decrece para invitar a tocar */
+      animation: sealBreathe 2.4s ease-in-out infinite;
+    }
+
+    @keyframes sealBreathe {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.10); }
+    }
+
+    .seal-wrapper:hover .wax-seal-svg {
+      transform: scale(1.04);
+    }
+
+    /* =========================================================
+       SECUENCIA DE ANIMACIÓN EXACTA DEL VIDEO
+       ========================================================= */
+    /* Etapa 1 (00:01 -> 00:02): Se abre la solapa y queda el sobre abierto con el
+       sello encima.
+
+       OJO: acá NO se oculta el cartel "¡Toca Aquí!". Antes se apagaba en el mismo
+       instante del toque, o sea el botón desaparecía ANTES de que el sobre
+       empezara a abrirse. El CTA completo (cartel + sello) se va en la etapa 3,
+       después de que el sobre terminó de abrirse. */
+    body.stage-1 .flap-shadow-wrap {
+      transform: rotateX(180deg);
+      opacity: 0;
+    }
+
+    /* El sello NO se mueve al abrirse: se queda quieto en su lugar (49%) mientras
+       la solapa se levanta, y el sobre abierto se lo lleva recién después.
+
+       Antes acá el sello bajaba hasta el centro de los pliegues (la "V" del
+       bolsillo, 56,3%): el problema es que ese descenso arranca en el mismo
+       instante del toque y dura EXACTAMENTE lo mismo que la apertura (2,6 s), así
+       que en pantalla se leía como que el botón "se va hacia abajo" durante toda
+       la apertura, o sea antes de que el sobre termine de abrirse. Quieto se
+       arreglan las dos cosas.
+       Si algún día se quiere volver al centrado sobre los pliegues, alcanza con
+       poner translate(-50%, -50%) translateY(calc(7.3vh - 23px)) — pero entonces
+       el descenso tiene que ser posterior a la apertura, no simultáneo.
+       La transition de transform queda declarada por si se reactiva. */
+    body.stage-1 .seal-wrapper {
+      transform: translate(-50%, -50%);
+    }
+
+    /* Etapa 2 (00:02 -> 00:03): acá el sobre NO se desvanece.
+       Antes este fundido servía para revelar la réplica del hero; como esa
+       réplica está oculta, dejaba la pantalla en blanco liso justo cuando
+       debía verse el sobre abierto. El sobre abierto se va recién en la etapa 3,
+       junto con el CTA (ver más abajo). */
+    body.stage-2 .envelope-overlay {
+      opacity: 1;
+      pointer-events: none;
+    }
+
+    /* Etapa 3: se van JUNTOS el CTA (cartel + sello) y el sobre ya abierto.
+       Si el sobre quedara visible cuando el botón ya no está, por un instante se
+       vería "el sobre abierto solo", y eso es lo que hay que evitar.
+
+       stage-3 entra a los 1,4 s, NO a los 2,6 s, y esa es la clave de todo.
+       Por qué: la solapa gira sobre su borde superior (transform-origin: top
+       center). A los 90 grados queda DE CANTO, o sea invisible, y de ahí en
+       adelante sigue girando pero ya está por ENCIMA del borde superior de la
+       pantalla, donde el overflow: hidden del overlay la recorta. Con esta curva
+       el giro llega a los 90 grados a los 1,3 s: desde ese momento el sobre ya se
+       ve abierto. Esperar al final del cronómetro (2,6 s) era esperar más de un
+       segundo con el sobre abierto a la vista y nada pasando. Eso era el "tarda
+       en pasar al fade".
+       OJO: el giro sigue durando lo mismo (2,6 s, ver .flap-shadow-wrap). No se
+       tocó la apertura; lo único que cambió es que no esperamos a que termine un
+       giro que ya no se ve.
+
+       Los TRES fundidos son idénticos —0,15 s, sin retardo—, así arrancan y
+       terminan a la vez: de 1,4 s a 1,55 s. El salto entra ahí mismo, a los
+       1,55 s.
+
+       Cartel y sello se van juntos porque son un solo botón. */
+    body.stage-3 .tooltip {
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+    }
+
+    body.stage-3 .seal-wrapper {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* El sobre abierto se disuelve con el mismo ritmo que el CTA.
+       El transition se declara ACÁ además del opacity por una razón concreta: el
+       navegador usa la transición del estado NUEVO, y el .envelope-overlay de base
+       trae 0.45s sin retardo (la medida que tenía la etapa 2). Sin esta línea, el
+       sobre se iría ANTES que el botón y volvería el problema al revés.
+
+       Detrás del sobre queda el papel del body (#f6f6f4), que es EXACTAMENTE el
+       color del velo de invitacion.html: entre las dos páginas no se ve ningún
+       corte. */
+    body.stage-3 .envelope-overlay {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+    }
+
+    /* =========================================================
+       INVITACIÓN DE BODA (REVELADA AL ABRIRSE EL SOBRE)
+
+       Réplica del hero real de invitacion.html: misma foto (img/hero.jpg),
+       mismo degradado encima, mismas tipografías y los mismos colores — así
+       el corte al entrar a la página no se nota. El texto no es de relleno:
+       son los datos reales de la boda del 9 de enero de 2027.
+       ========================================================= */
+    .invitation-page {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #fff;
+      padding: 4rem 1rem;
+      overflow: hidden;
+      background-color: var(--wine-deep);
+      /* OCULTA por ahora (NO eliminada): esta réplica del hero era la "página
+         intermedia" que se veía entre el sobre y la invitación.
+         Para volver a mostrarla, borrá la línea de abajo. */
+      display: none;
+    }
+
+    .invitation-page .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url("img/hero.jpg");
+      background-size: cover;
+      background-position: center;
+      transform: scale(1.04);
+    }
+
+    .invitation-page .hero-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(13,27,42,.55) 0%, rgba(13,27,42,.35) 40%, rgba(13,27,42,.7) 100%);
+    }
+
+    .invitation-page .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 820px;
+    }
+
+    .invitation-page .hero-pre {
+      font-family: var(--ff-body);
+      font-weight: 400;
+      font-size: .78rem;
+      letter-spacing: .34em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.82);
+      margin-bottom: 1.2rem;
+    }
+
+    .invitation-page .hero-names {
+      font-family: var(--ff-script);
+      font-size: clamp(3.8rem, 13vw, 8.5rem);
+      font-weight: 400;
+      line-height: .95;
+      color: #fff;
+      margin: 0;
+      text-shadow: 0 8px 40px rgba(0,0,0,.35);
+    }
+
+    .invitation-page .hero-names .amp {
+      display: block;
+      font-size: .42em;
+      color: var(--gold-soft);
+      margin: .1em 0;
+    }
+
+    .invitation-page .hero-meta {
+      font-family: var(--ff-display);
+      font-size: clamp(1.15rem, 2.6vw, 1.6rem);
+      letter-spacing: .04em;
+      color: #fff;
+      margin: 1.4rem 0 .2rem;
+    }
+
+    .invitation-page .hero-meta span { color: var(--gold-soft); margin: 0 .5rem; }
+
+    .invitation-page .hero-venue {
+      font-family: var(--ff-body);
+      font-size: .8rem;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.8);
+    }
+
+    /* Botón discreto para repetir la animación */
+    .replay-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      z-index: 40;
+      background: rgba(30, 32, 36, 0.82);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .replay-btn:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 3px;
+    }
+
+    body.stage-3 .replay-btn {
+      opacity: 1;
+      pointer-events: auto;
+      transition-delay: 1.2s;
+    }
+
+    /* ========== MOVIMIENTO REDUCIDO ========== */
+    @media (prefers-reduced-motion: reduce) {
+      .envelope-overlay,
+      .flap-shadow-wrap,
+      .envelope-open,
+      .seal-wrapper,
+      .seal-wrapper .wax-seal-svg,
+      .tooltip,
+      .replay-btn { transition: none !important; }
+
+      .tooltip,
+      .seal-wrapper .wax-seal-svg { animation: none !important; }
+    }
+
+</style>
 </head>
 <body>
-  <a class="skip-link" href="#main">Saltar al contenido</a>
 
-  <!-- ============================ WELCOME OVERLAY ============================ -->
-  <div class="welcome-overlay" id="welcomeOverlay">
-    <div class="welcome-inner">
-      <p class="welcome-pre">Junto con sus familias</p>
-      <h1 class="welcome-names">Astrid <em>&amp;</em> Fidel</h1>
-      <p class="welcome-date">9 de Enero, 2027</p>
-      <p class="welcome-location">Acapulco, Guerrero</p>
-      <button class="welcome-btn" id="welcomeBtn">
-        <span class="welcome-seal" aria-hidden="true">
-          <svg class="wseal-closed" viewBox="0 0 48 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 7h38a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/>
-            <path class="wseal-flap" d="M5 9l19 11 19-11"/>
-          </svg>
-          <svg class="wseal-open" viewBox="0 0 48 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 24l19-9 19 9"/>
-            <path class="wseal-card" d="M5 10h38a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z"/>
-            <path class="wseal-lift" d="M14 2h20a2 2 0 0 1 2 2v8h-24v-8a2 2 0 0 1 2-2z"/>
-            <path class="wseal-heart" d="M24 13c-3-2.3-5-4.4-5-6.3A2.6 2.6 0 0 1 24 4a2.6 2.6 0 0 1 5 3C29 8.6 27 10.7 24 13Z"/>
-          </svg>
-        </span>
-        Entrar
-      </button>
+  <!-- Definición geométrica de la solapa horizontal con punta redondeada -->
+  <svg width="0" height="0" style="position: absolute;">
+    <defs>
+      <clipPath id="horizontalFlapClip" clipPathUnits="objectBoundingBox">
+        <!-- Nace de las esquinas superiores y baja en "V" hasta la punta redondeada debajo del sello -->
+        <path d="M 0.02,0 L 0.465,0.655 Q 0.50,0.715 0.535,0.655 L 0.98,0 Z" />
+      </clipPath>
+    </defs>
+  </svg>
+
+  <!-- 1. CONTENIDO DE LA INVITACIÓN (DETRÁS DEL SOBRE) -->
+  <main class="invitation-page">
+    <div class="hero-bg" role="img" aria-label="Foto de portada de boda"></div>
+    <div class="hero-inner">
+      <p class="hero-pre">Junto con sus familias</p>
+      <h1 class="hero-names">Astrid<span class="amp">&amp;</span>Fidel</h1>
+      <p class="hero-meta">Sábado, 9 de Enero <span>&bull;</span> 2027</p>
+      <p class="hero-venue">Parroquia N.S. de Covadonga &amp; Casa Los Juanes &mdash; Acapulco, Guerrero</p>
+    </div>
+  </main>
+
+  <!-- 2. SOBRE HORIZONTAL TEXTURIZADO -->
+  <div class="envelope-overlay" id="envelopeOverlay">
+    <div class="envelope-base paper-texture"></div>
+
+    <!-- PLIEGUES DEL SOBRE ABIERTO — bolsillo frontal: solapa lateral izquierda,
+         solapa lateral derecha y solapa inferior con su bisel, más el interior
+         que se ve por el hueco entre ellas.
+         Es la misma geometría de recursos/sobre_invitacion/sobre abierto cerrado.html
+         (mismo viewBox 420x270), y se estira a pantalla completa como el resto
+         del sobre. Queda por debajo de la solapa: al abrirse, se ve esto. -->
+    <svg class="envelope-open" viewBox="0 0 420 270" preserveAspectRatio="none"
+         aria-hidden="true" focusable="false">
+      <defs>
+        <!-- Interior del sobre: gris NEUTRO apenas más oscuro que el papel.
+             Nada de tonos cálidos: la portada no se tiñe. -->
+        <linearGradient id="openBackGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+          <stop offset="0%" stop-color="#e8e8e5"/>
+          <stop offset="100%" stop-color="#dededa"/>
+        </linearGradient>
+
+        <!-- Solapas: el MISMO blanco del papel. El degradé es mínimo (2-3
+             niveles) y sólo sirve para dar volumen, no para cambiar el color. -->
+        <linearGradient id="openLeftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f8f8f6"/>
+          <stop offset="100%" stop-color="#f3f3f1"/>
+        </linearGradient>
+
+        <linearGradient id="openRightGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#f7f7f5"/>
+          <stop offset="100%" stop-color="#f2f2ef"/>
+        </linearGradient>
+
+        <linearGradient id="openBottomGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+          <stop offset="0%" stop-color="#f9f9f7"/>
+          <stop offset="100%" stop-color="#f4f4f2"/>
+        </linearGradient>
+
+        <!-- Lo que hace VISIBLES los pliegues son las sombras de las costuras,
+             no un cambio de color. -->
+        <filter id="openSideShadow" x="-10%" y="-10%" width="120%" height="120%">
+          <feDropShadow dx="0" dy="-2" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.16"/>
+        </filter>
+
+        <!-- Sombra de la solapa inferior sobre las laterales -->
+        <filter id="openBottomShadow" x="-10%" y="-15%" width="120%" height="130%">
+          <feDropShadow dx="0" dy="-2" stdDeviation="2" flood-color="#000000" flood-opacity="0.13"/>
+        </filter>
+      </defs>
+
+      <!-- Interior del sobre -->
+      <rect x="0" y="0" width="420" height="270" fill="url(#openBackGrad)"/>
+
+      <!-- Solapa lateral izquierda con hombro superior redondeado -->
+      <path d="M 0,270 L 0,14 C 0,2 14,3 32,16 L 210,152 L 0,270 Z"
+            fill="url(#openLeftGrad)" filter="url(#openSideShadow)"/>
+
+      <!-- Solapa lateral derecha con hombro superior redondeado -->
+      <path d="M 420,270 L 420,14 C 420,2 406,3 388,16 L 210,152 L 420,270 Z"
+            fill="url(#openRightGrad)" filter="url(#openSideShadow)"/>
+
+      <!-- Solapa inferior con punta central redondeada -->
+      <path d="M 0,270
+               L 0,262
+               C 10,252 24,242 40,231
+               L 190,131
+               Q 210,118 230,131
+               L 380,231
+               C 396,242 410,252 420,262
+               L 420,270 Z"
+            fill="url(#openBottomGrad)" filter="url(#openBottomShadow)"/>
+
+      <!-- Bisel sutil de la solapa inferior. El SVG está estirado a pantalla
+           completa, así que el trazo lleva vector-effect como ATRIBUTO: si no,
+           el navegador lo multiplica por el escalado (~4,5x) y deja de ser un
+           bisel fino. -->
+      <path d="M 2,265 C 14,254 28,244 44,233 L 191,134 Q 210,122 229,134 L 376,233 C 392,244 406,254 418,265"
+            fill="none" stroke="#ffffff" stroke-width="1.4"
+            vector-effect="non-scaling-stroke" opacity="0.85"/>
+    </svg>
+
+    <div class="flap-shadow-wrap">
+      <div class="envelope-flap paper-texture"></div>
     </div>
   </div>
 
-  <!-- ============================ HEADER ============================ -->
-  <header class="site-header" id="siteHeader">
-    <div class="container nav-wrap">
-      <a class="brand" href="#home" aria-label="Astrid and Fidel — home">Astrid <em>&amp;</em> Fidel</a>
+  <!-- 3. CARTEL "¡Toca Aquí!" Y SELLO DE LACRE EN RELIEVE "A & F" -->
+  <div class="seal-wrapper" id="sealTrigger" role="button" tabindex="0" aria-label="Abrir la invitación de Astrid y Fidel">
+    <div class="tooltip">¡Toca Aquí!</div>
 
-      <nav aria-label="Primary">
-        <ul class="nav-menu" id="navMenu">
-          <li><a href="#home" class="active">Inicio</a></li>
-          <li><a href="#story">Historia</a></li>
-          <li><a href="#padres">Padres</a></li>
-          <li><a href="#details">Detalles</a></li>
-          <li><a href="#dress-code">Vestimenta</a></li>
-          <li hidden><a href="#gallery">Galería</a></li>
-          <li hidden><a href="#party">Grupo</a></li>
-<li hidden><a href="#travel">Viaje</a></li>
-          <li><a href="#rsvp">RSVP</a></li>
-        </ul>
-      </nav>
+    <svg class="wax-seal-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="waxBodyGrad" cx="38%" cy="32%" r="68%">
+          <stop offset="0%" stop-color="#f7f4e8"/>
+          <stop offset="45%" stop-color="#e8e2cc"/>
+          <stop offset="82%" stop-color="#d5cdb2"/>
+          <stop offset="100%" stop-color="#b8ae8e"/>
+        </radialGradient>
 
-      <div class="nav-actions">
-        <span class="count-chip" aria-hidden="true"><b id="chipDays">--</b> días</span>
-        <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navMenu"><span></span></button>
-      </div>
-    </div>
-  </header>
-  <div class="nav-backdrop" id="navBackdrop" hidden></div>
+        <linearGradient id="innerRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#bfb697"/>
+          <stop offset="50%" stop-color="#ded8c1"/>
+          <stop offset="100%" stop-color="#faf8f0"/>
+        </linearGradient>
 
-  <main id="main">
+        <radialGradient id="innerFaceGrad" cx="45%" cy="40%" r="58%">
+          <stop offset="0%" stop-color="#f4f0e1"/>
+          <stop offset="70%" stop-color="#e4dec7"/>
+          <stop offset="100%" stop-color="#cfc7ab"/>
+        </radialGradient>
 
-    <!-- ============================ HERO ============================ -->
-    <section class="hero" id="home" aria-label="Astrid and Fidel are getting married">
-      <div class="hero__bg" role="img" aria-label="Foto de portada de boda"></div>
-      <div class="hero__inner">
-        <p class="hero__pre">Junto con sus familias</p>
-        <h1 class="hero__names">Astrid<span class="amp">&amp;</span>Fidel</h1>
-        <p class="hero__meta">Sábado, 9 de Enero <span>&bull;</span> 2027</p>
-        <p class="hero__venue">Parroquia N.S. de Covadonga &amp; Casa Los Juanes &mdash; Acapulco, Guerrero</p>
+        <filter id="embossText" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="1.2" dy="1.5" stdDeviation="0.6" flood-color="#ffffff" flood-opacity="0.85"/>
+          <feDropShadow dx="-1" dy="-1" stdDeviation="0.6" flood-color="#7c7252" flood-opacity="0.55"/>
+        </filter>
+      </defs>
 
-        <div class="countdown" id="countdown" data-date="2027-01-09T16:45:00" aria-label="Countdown to the wedding">
-          <div class="count-cell"><b id="cd-days">--</b><span>Días</span></div>
-          <div class="count-cell"><b id="cd-hours">--</b><span>Horas</span></div>
-          <div class="count-cell"><b id="cd-mins">--</b><span>Minutos</span></div>
-          <div class="count-cell"><b id="cd-secs">--</b><span>Segundos</span></div>
-        </div>
+      <!-- Contorno orgánico del sello de lacre -->
+      <path d="M 100,10
+               C 126,9 152,19 169,38
+               C 186,57 192,81 190,107
+               C 188,134 176,158 154,173
+               C 132,188 108,192 82,188
+               C 55,184 31,171 18,148
+               C 5,125 7,96 14,70
+               C 21,44 38,24 63,15
+               C 76,10 88,11 100,10 Z"
+            fill="url(#waxBodyGrad)"
+            stroke="#c6bd9f"
+            stroke-width="1.5"/>
 
-        <div class="hero__cta">
-          <a href="#rsvp" class="btn-ec btn-ec--light">Confirmar Asistencia</a>
-          <a href="#story" class="btn-ec btn-ec--ghost" style="color:#fff;border-color:rgba(255,255,255,.6)">Nuestra Historia</a>
-        </div>
-      </div>
-      <a class="scroll-cue" href="#story" aria-label="Scroll to our story">
-        <svg viewBox="0 0 24 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="1" width="10" height="20" rx="5"/><path d="M12 6v4"/><path d="M8 27l4 4 4-4"/></svg>
-      </a>
-    </section>
+      <path d="M 98,15
+               C 123,14 147,23 163,41
+               C 179,59 185,81 183,106
+               C 181,131 170,153 149,167
+               C 128,181 106,185 82,181
+               C 57,177 35,165 23,144
+               C 11,123 13,96 19,72
+               C 26,47 42,29 65,20
+               C 77,15 88,16 98,15 Z"
+            fill="none"
+            stroke="#fbf9f2"
+            stroke-width="2"
+            opacity="0.65"/>
 
-    <!-- ============================ OUR STORY ============================ -->
-    <section class="section" id="story" aria-labelledby="story-title">
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="eyebrow">cómo empezó</span>
-          <h2 id="story-title">Nuestra Historia</h2>
-          <p>De todos los caminos que pudimos tomar, qué bonito que el destino nos haya llevado hasta el mismo altar. Acompáñanos en este momento tan especial para nosotros.</p>
-          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></div>
-        </div>
+      <!-- Aro hundido interior -->
+      <circle cx="100" cy="100" r="66" fill="url(#innerRingGrad)" stroke="#b3a989" stroke-width="1.2"/>
+      <circle cx="100" cy="100" r="61" fill="url(#innerFaceGrad)" stroke="#f9f6ec" stroke-width="1.5"/>
 
-        <div class="story-quote reveal">
-          <p class="overline story-quote-kicker">Nuestra fe</p>
-          <p class="story-quote-text">“Una historia de amor es mucho más bonita cuando dejamos a Dios trabajar en nuestros corazones.”</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================ PARENTS ============================ -->
-    <section class="section" id="padres" aria-labelledby="padres-title">
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="eyebrow">con la bendición de Dios</span>
-          <h2 id="padres-title">Nuestros Padres</h2>
-          <p>Gracias por su amor, su ejemplo y su bendición en este día tan especial.</p>
-          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></div>
-        </div>
-
-        <div class="parents-grid">
-          <article class="parents-card reveal">
-            <span class="parents-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21h13"/><path d="M8 21l1-8.4c.2-1.7.9-3.2 2.6-4.3 1.3-.8 3-1.3 4.6-1.3"/><path d="M16.2 7c.5 1.3.9 3 .3 5-.4 1.5-1.3 2.6-2.5 3.2"/><path d="M4.5 13.6c1.4.8 3.2 1 4.9.3"/></svg>
-            </span>
-            <p class="parents-role">Papás de la novia</p>
-            <h3>Elizabeth García Rodríguez <span class="parents-and">y</span> Miguel Luciano Lazaro</h3>
-          </article>
-
-          <article class="parents-card reveal">
-            <span class="parents-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21h14"/><path d="M7.5 21V8.5c0-2 1.6-3.5 4-3.5s4.5 1.4 4.5 3.5V21"/><path d="M7.5 12h9"/></svg>
-            </span>
-            <p class="parents-role">Papás del novio</p>
-            <h3>Aurora <span class="parents-and">y</span> Samuel</h3>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================ THE DETAILS ============================ -->
-    <section class="section section--blush" id="details" aria-labelledby="details-title">
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="eyebrow">la celebración</span>
-          <h2 id="details-title">Los Detalles</h2>
-          <p>Ceremonia religiosa en la Parroquia Nuestra Señora de Covadonga y un festejo de ensueño en Casa Los Juanes. Aquí todo lo que necesitas saber.</p>
-          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></div>
-        </div>
-
-        <div class="detail-grid">
-          <article class="detail-card reveal">
-            <div class="detail-frame">
-              <img src="img/lugarBoda/iglesia-img-hd.jpg" alt="Foto de la parroquia" loading="lazy">
-              <span class="tag">Ceremonia</span>
-            </div>
-            <div class="detail-body">
-              <h3>La Ceremonia</h3>
-              <p class="place">Parroquia Nuestra Señora de Covadonga</p>
-              <ul class="detail-list">
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.5" cy="14" r="5.5"/><circle cx="15.5" cy="14" r="5.5"/><path d="M9 4l3 3 3-3M12 7V2"/></svg>
-                  <span><b>4:45 PM</b> &mdash; te esperamos desde las 4:30 PM</span>
-                </li>
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                  <span>Ceremonia religiosa con la bendición de Dios</span>
-                </li>
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
-                  <span><a href="https://maps.app.goo.gl/dnGxC4YtKZa3KR3AA" target="_blank" rel="noopener">Abrir ubicación de la parroquia</a></span>
-                </li>
-              </ul>
-              <a href="https://maps.app.goo.gl/dnGxC4YtKZa3KR3AA" class="btn-ec btn-ec--ghost" target="_blank" rel="noopener">Cómo llegar</a>
-            </div>
-          </article>
-
-          <article class="detail-card reveal">
-            <div class="detail-frame">
-              <img src="img/lugarBoda/fiesta-img-hd.jpg" alt="Foto de la recepción" loading="lazy">
-              <span class="tag">Recepción</span>
-            </div>
-            <div class="detail-body">
-              <h3>La Fiesta</h3>
-              <p class="place">Casa Los Juanes</p>
-              <p class="overline itinerary-title">Horarios del festejo</p>
-              <ol class="itinerary">
-                <li class="it-item">
-                  <span class="it-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.5" cy="14" r="5.5"/><circle cx="15.5" cy="14" r="5.5"/><path d="M9 4l3 3 3-3M12 7V2"/></svg>
-                  </span>
-                  <span class="it-info"><b class="it-time">6:00 PM</b><span class="it-label">Ceremonia civil</span></span>
-                </li>
-                <li class="it-item">
-                  <span class="it-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 3l1 8a4 4 0 0 0 8 0l1-8"/><path d="M12 15v6M9 21h6"/></svg>
-                  </span>
-                  <span class="it-info"><b class="it-time">7:30 PM</b><span class="it-label">Vals y brindis</span></span>
-                </li>
-                <li class="it-item">
-                  <span class="it-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 2v8M5 2v6a2 2 0 0 0 4 0V2M7 10v12"/><path d="M16 2v20M16 10c3 0 5-2 5-4-2-3-4-4-5-4z"/></svg>
-                  </span>
-                  <span class="it-info"><b class="it-time">8:30 PM</b><span class="it-label">Cena</span></span>
-                </li>
-                <li class="it-item">
-                  <span class="it-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 18V5l10-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg>
-                  </span>
-                  <span class="it-info"><b class="it-time">9:30 PM</b><span class="it-label">Fiesta</span></span>
-                </li>
-                <li class="it-item">
-                  <span class="it-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-                  </span>
-                  <span class="it-info"><b class="it-time">01:30 AM</b><span class="it-label">Fin del evento</span></span>
-                </li>
-              </ol>
-              <ul class="detail-list">
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V9l8-5 8 5v12"/><path d="M9 21v-6h6v6"/></svg>
-                  <span><a href="https://maps.google.com/maps?q=16.830873489379883%2C-99.912841796875&z=17&hl=es" target="_blank" rel="noopener">Abrir ubicación de Casa Los Juanes</a></span>
-                </li>
-              </ul>
-              <a href="#rsvp" class="btn-ec">Reservar mi lugar</a>
-            </div>
-          </article>
-        </div>
-
-        </div>
-    </section>
-
-    <!-- ============================ DRESS CODE ============================ -->
-    <section class="section" id="dress-code" aria-labelledby="dress-title">
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="eyebrow">código de vestimenta</span>
-          <h2 id="dress-title">Cómo Vestirse</h2>
-          <p>Queremos que se sientan cómodos y que disfruten de la brisa del mar, por eso recomendamos:</p>
-          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></div>
-        </div>
-
-        <div class="dress-wrap reveal">
-          <span class="dress-badge">Semi-formal · Casual</span>
-          <div class="dress-grid">
-            <article class="dress-col">
-              <span class="dress-ico">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4l7 4 7-4 2 5-3 2v9H5v-9L3 9z"/><path d="M11 13h2"/></svg>
-              </span>
-              <h3>Para ellas</h3>
-              <p>Vestidos frescos y elegantes</p>
-            </article>
-            <article class="dress-col">
-              <span class="dress-ico">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3l4 3 4-3 3 5-2 14H7L5 8z"/><path d="M8 3l1.5 3h5L16 3"/></svg>
-              </span>
-              <h3>Para ellos</h3>
-              <p>Trajes ligeros o guayaberas</p>
-            </article>
-          </div>
-          <p class="dress-note">Pequeño detalle: por favor evita colores blanco, marfil, beige o similares para no opacar a los novios. <strong>¡Muchas gracias!</strong></p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================ GALLERY ============================ -->
-    <section class="section" id="gallery" aria-labelledby="gallery-title" hidden>
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="eyebrow">momentos</span>
-          <h2 id="gallery-title">Nuestros Momentos</h2>
-          <p>Unas cuantas imágenes de nuestra historia juntos — y una pequeña preview de lo que será el gran día.</p>
-          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></div>
-        </div>
-
-        <div class="gallery-grid reveal">
-          <figure class="g-item g-tall"><img src="img/gallery1.jpg" alt="Foto de galería 1" loading="lazy"></figure>
-          <figure class="g-item g-wide"><img src="img/gallery6.jpg" alt="Foto de galería 2" loading="lazy"></figure>
-          <figure class="g-item"><img src="img/gallery3.jpg" alt="Foto de galería 3" loading="lazy"></figure>
-          <figure class="g-item"><img src="img/gallery5.jpg" alt="Foto de galería 4" loading="lazy"></figure>
-          <figure class="g-item g-tall"><img src="img/gallery2.jpg" alt="Foto de galería 5" loading="lazy"></figure>
-          <figure class="g-item"><img src="img/gallery4.jpg" alt="Foto de galería 6" loading="lazy"></figure>
-          <figure class="g-item g-wide"><img src="img/lugarBoda/iglesea-insise-img-hd.jpg" alt="Interior de la parroquia" loading="lazy"></figure>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================ WEDDING PARTY ============================ -->
-    <section class="section section--blush" id="party" aria-labelledby="party-title" hidden>
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="eyebrow">a nuestro lado</span>
-          <h2 id="party-title">Nuestro Grupo</h2>
-          <p>Los amigos y familiares más queridos que nos acompañan en este día tan especial.</p>
-          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></div>
-        </div>
-
-        <div class="party-grid">
-          <article class="party-card reveal">
-            <div class="party-portrait"><img src="img/party1.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
-            <p class="party-role">[Rol]</p>
-            <h3>[Nombre]</h3>
-            <p>[Breve descripción de esta persona]</p>
-          </article>
-          <article class="party-card reveal">
-            <div class="party-portrait"><img src="img/party2.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
-            <p class="party-role">[Rol]</p>
-            <h3>[Nombre]</h3>
-            <p>[Breve descripción de esta persona]</p>
-          </article>
-          <article class="party-card reveal">
-            <div class="party-portrait"><img src="img/party3.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
-            <p class="party-role">[Rol]</p>
-            <h3>[Nombre]</h3>
-            <p>[Breve descripción de esta persona]</p>
-          </article>
-          <article class="party-card reveal">
-            <div class="party-portrait"><img src="img/party4.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
-            <p class="party-role">[Rol]</p>
-            <h3>[Nombre]</h3>
-            <p>[Breve descripción de esta persona]</p>
-          </article>
-          <article class="party-card reveal">
-            <div class="party-portrait"><img src="img/party5.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
-            <p class="party-role">[Rol]</p>
-            <h3>[Nombre]</h3>
-            <p>[Breve descripción de esta persona]</p>
-          </article>
-          <article class="party-card reveal">
-            <div class="party-portrait"><img src="img/party6.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
-            <p class="party-role">[Rol]</p>
-            <h3>[Nombre]</h3>
-            <p>[Breve descripción de esta persona]</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================ RSVP ============================ -->
-    <section class="section" id="rsvp" aria-labelledby="rsvp-title">
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="eyebrow">acompáñanos</span>
-          <h2 id="rsvp-title">¿Vendrás?</h2>
-          <p>Por favor confirma antes del <strong>20 de Diciembre, 2026</strong> para reservarte un lugar y un pedazo de pastel.</p>
-          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></div>
-        </div>
-
-        <div class="rsvp-wrap reveal">
-          <div class="rsvp-card">
-            <form class="rsvp-form" id="rsvpForm" novalidate>
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="fld-label" for="rsvp-name">Nombre completo</label>
-                  <input type="text" class="form-control" id="rsvp-name" name="name" autocomplete="name" required>
-                </div>
-                <div class="col-md-6" hidden>
-                  <label class="fld-label" for="rsvp-email">Correo electrónico</label>
-                  <input type="email" class="form-control" id="rsvp-email" name="email" autocomplete="email">
-                </div>
-
-                <div class="col-12">
-                  <span class="fld-label" id="attend-label">¿Asistirás?</span>
-                  <div class="attend-group" role="radiogroup" aria-labelledby="attend-label">
-                    <div class="attend-opt">
-                      <input type="radio" id="attend-yes" name="attending" value="yes" checked>
-                      <label for="attend-yes">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-                        ¡Con mucho gusto asistiré!
-                      </label>
-                    </div>
-                    <div class="attend-opt">
-                      <input type="radio" id="attend-no" name="attending" value="no">
-                      <label for="attend-no">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                        Lamentablemente no podré asistir
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-12">
-                  <label class="fld-label" for="rsvp-song">
-                    <span style="display:inline-flex;align-items:center;gap:.4rem">
-                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 18V5l10-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg>
-                      Una canción que te saque a bailar
-                    </span>
-                  </label>
-                  <input type="text" class="form-control" id="rsvp-song" name="song" placeholder="Artista — Canción">
-                </div>
-
-                <div class="col-12">
-                  <label class="fld-label" for="rsvp-note">Un mensaje para la pareja <span style="text-transform:none;letter-spacing:0;color:var(--muted)">(opcional)</span></label>
-                  <textarea class="form-control" id="rsvp-note" name="note" rows="4" placeholder="Necesidades alimentarias, buenos deseos, o un mal chiste."></textarea>
-                </div>
-
-                <div class="col-12 text-center" style="margin-top:.6rem">
-                  <button type="submit" class="btn-ec btn-ec--gold">Enviar mi confirmación</button>
-                </div>
-              </div>
-            </form>
-
-            <div class="rsvp-success" id="rsvpSuccess" role="status" aria-live="polite">
-              ¡Gracias por confirmar! No podemos esperar para celebrar contigo. 🌿
-            </div>
-          </div>
-        </div>
-
-        <p class="rsvp-note reveal"><strong>Importante:</strong> amamos a los niños, pero en esta ocasión queremos que todos disfruten de un ambiente tranquilo y totalmente para adultos.</p>
-      </div>
-    </section>
-
-    <!-- ============================ REGISTRY ============================ -->
-    <section class="section section--blush" id="registry" aria-labelledby="registry-title">
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="eyebrow">con gratitud</span>
-          <h2 id="registry-title">Mesa de Regalos</h2>
-          <p>Tu presencia es el mejor regalo — pero para quienes lo han preguntado, aquí pueden encontrarnos.</p>
-          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></div>
-        </div>
-
-        <div class="registry-grid">
-          <article class="reg-card reveal">
-            <div class="reg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></div>
-            <h3>Liverpool</h3>
-            <p>Encuentra nuestra mesa de regalos con artículos para el hogar, electrodomésticos y más.</p>
-            <a href="https://www.liverpool.com.mx/mesa-de-regalos" class="btn-ec btn-ec--ghost" target="_blank" rel="noopener">Ver mesa de regalos</a>
-          </article>
-          <article class="reg-card reveal">
-            <div class="reg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-            <h3>Transferencia bancaria</h3>
-            <p>Si prefieres hacer un depósito o transferencia, aquí tienes nuestros datos.</p>
-            <button class="btn-ec btn-ec--ghost registry-bank-btn" data-bank="banco" data-account="1234567890" data-clabe="012345678901234567" data-name="Astrid López / Fidel Evangelista">Ver datos bancarios</button>
-          </article>
-          <article class="reg-card reveal">
-            <div class="reg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
-            <h3>Fondo de luna de miel</h3>
-            <p>Ayúdanos a vivir la experiencia de nuestra luna de miel con una contribución voluntaria.</p>
-            <a href="https://www.paypal.com/paypalme/tu-usuario" class="btn-ec btn-ec--ghost" target="_blank" rel="noopener">Contribuir</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================ BANK MODAL ============================ -->
-    <div class="bank-modal" id="bankModal">
-      <div class="bank-modal__card">
-        <button class="bank-modal__close" id="bankModalClose" aria-label="Cerrar">&times;</button>
-        <h3>Datos bancarios</h3>
-        <div class="bank-modal__row">
-          <span class="bank-modal__label">Titular</span>
-          <span class="bank-modal__value" id="bankName">—</span>
-        </div>
-        <div class="bank-modal__row">
-          <span class="bank-modal__label">Banco</span>
-          <span class="bank-modal__value" id="bankBank">—</span>
-        </div>
-        <div class="bank-modal__row">
-          <span class="bank-modal__label">Cuenta</span>
-          <span class="bank-modal__value bank-modal__copy" id="bankAccount" data-copy="true">—</span>
-        </div>
-        <div class="bank-modal__row">
-          <span class="bank-modal__label">CLABE</span>
-          <span class="bank-modal__value bank-modal__copy" id="bankClabe" data-copy="true">—</span>
-        </div>
-        <p class="bank-modal__hint">Toca un dato para copiarlo al portapapeles</p>
-      </div>
-    </div>
-
-    <!-- ============================ TRAVEL & STAY ============================ -->
-    <section class="section" id="travel" aria-labelledby="travel-title" hidden>
-      <div class="container">
-        <div class="section-head reveal">
-          <span class="eyebrow">cómo llegar</span>
-          <h2 id="travel-title">Viaje y Hospedaje</h2>
-          <p>Nuestra celebración se llevará a cabo en Acapulco, Guerrero. La ceremonia religiosa será en la Parroquia Nuestra Señora de Covadonga y el festejo en Casa Los Juanes.</p>
-          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></div>
-        </div>
-
-        <div class="travel-grid">
-          <div class="venue-feature reveal">
-            <img src="img/lugarBoda/fiesta-2-img-hd.jpg" alt="Foto del venue" loading="lazy">
-            <div>
-              <p class="overline" style="color:var(--gold-soft)">El Lugar</p>
-              <h3>Casa Los Juanes</h3>
-              <p>La fiesta se llevará a cabo en Casa Los Juanes. Te compartimos la ubicación exacta del festejo.</p>
-              <a href="https://maps.google.com/maps?q=16.830873489379883%2C-99.912841796875&z=17&hl=es" class="btn-ec btn-ec--light" target="_blank" rel="noopener">Abrir en Maps</a>
-            </div>
-          </div>
-
-          <div class="hotel-list">
-            <article class="hotel-card reveal">
-              <div class="hotel-thumb"><img src="img/hotel1.jpg" alt="Foto del hotel 1" loading="lazy"></div>
-              <div class="hotel-info">
-                <p class="rate">Desde $[precio] / noche</p>
-                <h4>[Nombre del Hotel 1]</h4>
-                <p>[Descripción breve. Código de descuento: <strong>[CÓDIGO]</strong>]</p>
-                <a href="#">Reservar</a>
-              </div>
-            </article>
-            <article class="hotel-card reveal">
-              <div class="hotel-thumb"><img src="img/hotel2.jpg" alt="Foto del hotel 2" loading="lazy"></div>
-              <div class="hotel-info">
-                <p class="rate">Desde $[precio] / noche</p>
-                <h4>[Nombre del Hotel 2]</h4>
-                <p>[Descripción breve del segundo hotel]</p>
-                <a href="#">Reservar</a>
-              </div>
-            </article>
-          </div>
-        </div>
-
-        <p class="travel-note reveal"><strong>¿Vuelas?</strong> Aeropuerto Internacional de Acapulco (ACA) está a 25 minutos del centro. [Recomendaciones de transporte adicionales.]</p>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ============================ FOOTER ============================ -->
-  <footer class="site-footer">
-    <div class="container">
-      <p class="footer-monogram">Astrid &amp; Fidel</p>
-      <p class="footer-date">9 de Enero, 2027 &mdash; Acapulco, Guerrero</p>
-      <p class="footer-hash">#AstridyFidel2027</p>
-
-      <ul class="footer-nav">
-        <li><a href="#story">Nuestra Historia</a></li>
-        <li><a href="#padres">Nuestros Padres</a></li>
-        <li><a href="#details">Detalles</a></li>
-        <li hidden><a href="#gallery">Galería</a></li>
-        <li hidden><a href="#party">Nuestro Grupo</a></li>
-        <li><a href="#rsvp">RSVP</a></li>
-        <li hidden><a href="#travel">Viaje</a></li>
-      </ul>
-
-      <div class="footer-rule"></div>
-      <p class="footer-fine">
-        &copy; 2027 Astrid &amp; Fidel. Hecho con amor.<br>
-        Plantilla por <a href="https://uicookies.com/">uiCookies</a>
-      </p>
-    </div>
-  </footer>
-
-  <!-- ============================ MUSIC ============================ -->
-  <button class="music-toggle" id="musicToggle" aria-label="Activar música" aria-pressed="false">
-    <svg class="music-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M9 18V5l12-2v13"/>
-      <circle cx="6" cy="18" r="3"/>
-      <circle cx="18" cy="16" r="3"/>
+      <!-- Monograma "A & F" en relieve -->
+      <g filter="url(#embossText)" fill="#968b6c" font-family="'Cormorant Garamond', Georgia, serif" font-weight="600">
+        <text x="68" y="108" font-size="44" text-anchor="middle">A</text>
+        <text x="101" y="125" font-size="33" text-anchor="middle">&amp;</text>
+        <text x="133" y="108" font-size="44" text-anchor="middle">F</text>
+      </g>
     </svg>
-    <svg class="music-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none">
-      <rect x="6" y="4" width="4" height="16" rx="1"/>
-      <rect x="14" y="4" width="4" height="16" rx="1"/>
-    </svg>
-  </button>
+  </div>
 
-  <audio id="weddingMusic" loop preload="auto">
-    <source src="audio/jonasblakewood-indie-rock-557623.mp3" type="audio/mpeg">
-  </audio>
+  <button class="replay-btn" id="replayBtn">Repetir animación</button>
 
-  <script src="js/vendor/bootstrap.bundle.min.js"></script>
-  <script src="js/main.js"></script>
+  <script>
+    // Página de inicio de la invitación: cuando termina el efecto se entra ahí.
+    // (index.html es el sobre; la invitación vive en invitacion.html, misma carpeta)
+    const NEXT_PAGE = 'invitacion.html';
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // La solapa se abre lento (2,6 s, igual que la transición de .flap-shadow-wrap)
+    // y el sello se queda quieto en su lugar mientras eso pasa (ver stage-1).
+    // El sello se disuelve RECIÉN cuando el sobre terminó de abrirse, y el salto
+    // espera a que ya no esté: el velo de invitacion.html es opaco, así que si el
+    // sello todavía se ve, lo tapa a mitad del fundido y se lee como un corte.
+    // Cuándo arranca la salida: cuando la solapa YA SE VE levantada, no cuando el
+    // cronómetro dice que terminó. La solapa gira sobre su borde superior: a los
+    // 90 grados queda de canto (invisible) y recortada por el overflow del
+    // overlay. Con esta curva eso pasa a los 1,3 s, así que a los 1,4 s ya no hay
+    // nada que mostrar del sobre abierto.
+    // El giro NO se tocó: sigue durando 2,6 s (ver .flap-shadow-wrap).
+    // Después va todo junto: el fundido (0,15 s, ver CSS) y el salto apenas
+    // termina. Cero pantalla quieta antes del fade de la invitación.
+    // Con movimiento reducido no hay transiciones (ver el bloque de CSS): la
+    // solapa se abre de golpe, así que las etapas se adelantan en vez de dejar al
+    // CTA colgado en pantalla hasta el salto.
+    const FLAP_OPEN_MS = reduceMotion ? 350 : 2600;     // largo del giro de la solapa (sin tocar)
+    const SEAL_FADE_AT_MS = reduceMotion ? 350 : 1400;  // cuando la solapa ya se ve arriba
+                                   // + 0,15 s de fundido sin retardo = se va a los 1,55 s
+    const NEXT_DELAY_MS = reduceMotion ? 450 : 1550;
+
+    const sealTrigger = document.getElementById('sealTrigger');
+    const envelopeOverlay = document.getElementById('envelopeOverlay');
+    const replayBtn = document.getElementById('replayBtn');
+
+    let timers = [];
+    let isOpen = false;
+
+    function openEnvelope() {
+      if (isOpen) return;
+      isOpen = true;
+
+      // Etapa 1 (00:01 -> 00:02): se abre la solapa y queda el sobre abierto con
+      // el CTA encima. Acá NO se oculta el cartel: se va con el sello en la etapa 3.
+      document.body.classList.add('stage-1');
+
+      // Etapa 2: acá el sobre sigue entero; se va en la etapa 3, junto con el CTA.
+      timers.push(setTimeout(() => {
+        document.body.classList.add('stage-2');
+      }, FLAP_OPEN_MS));
+
+      // Etapa 3: se van juntos el CTA y el sobre abierto (ver CSS), recién cuando
+      // la solapa terminó de abrirse.
+      timers.push(setTimeout(() => {
+        document.body.classList.add('stage-3');
+      }, SEAL_FADE_AT_MS));
+
+      // Fin del efecto -> entrar a la página de inicio de la invitación
+      timers.push(setTimeout(() => {
+        window.location.href = NEXT_PAGE;
+      }, NEXT_DELAY_MS));
+    }
+
+    function resetEnvelope() {
+      timers.forEach(t => clearTimeout(t));
+      timers = [];
+      document.body.classList.remove('stage-3', 'stage-2', 'stage-1');
+      isOpen = false;
+    }
+
+    sealTrigger.addEventListener('click', openEnvelope);
+    envelopeOverlay.addEventListener('click', openEnvelope);
+    replayBtn.addEventListener('click', resetEnvelope);
+
+    // El sello es un div con role="button": hay que poder abrirlo con Enter y con Espacio.
+    sealTrigger.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openEnvelope();
+      }
+    });
+
+    // Al volver con el botón "atrás" el navegador restaura esta página desde la
+    // bfcache con las clases stage-* puestas y los timers todavía vivos: quedaría
+    // una pantalla rota y el salto a la invitación disparándose al instante.
+    // resetEnvelope() la devuelve al estado inicial.
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) resetEnvelope();
+    });
+  </script>
+
 </body>
 </html>
