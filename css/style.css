@@ -162,6 +162,27 @@ a:hover { color: var(--gold); }
 .btn-ec--light { --b: #fff; color: var(--wine-deep); }
 .btn-ec--light:hover { background: transparent; color: #fff; border-color: #fff; }
 
+/* ---- Highlighted CTAs: a soft halo that pulses so the eye finds them fast.
+   Animation only — button colours, borders and typography stay untouched. */
+.btn-ec--pulse { position: relative; }
+.btn-ec--pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--b);
+  border-radius: inherit;
+  pointer-events: none;
+  animation: btnPulse 2.6s ease-out infinite;
+}
+@keyframes btnPulse {
+  0%   { transform: scale(1);    opacity: .55; }
+  65%  { transform: scale(1.16); opacity: 0; }
+  100% { transform: scale(1.16); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-ec--pulse::after { animation: none; opacity: 0; }
+}
+
 /* =====================================================================
    Header / Navigation
    ===================================================================== */

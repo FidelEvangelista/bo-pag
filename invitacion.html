@@ -321,8 +321,10 @@
         </div>
 
         <div class="hero__cta">
-          <a href="#rsvp" class="btn-ec btn-ec--light">Confirmar Asistencia</a>
-          <a href="#story" class="btn-ec btn-ec--ghost" style="color:#fff;border-color:rgba(255,255,255,.6)">Nuestra Historia</a>
+          <a href="#rsvp" class="btn-ec btn-ec--light btn-ec--pulse">Confirmar Asistencia</a>
+          <!-- "Nuestra Historia" hidden on request: the story heading is gone from #story.
+               Markup kept so it can be restored by removing the hidden attribute. -->
+          <a href="#story" class="btn-ec btn-ec--ghost" style="color:#fff;border-color:rgba(255,255,255,.6)" hidden>Nuestra Historia</a>
         </div>
       </div>
       <a class="scroll-cue" href="#story" aria-label="Scroll to our story">
@@ -331,14 +333,8 @@
     </section>
 
     <!-- ============================ OUR STORY ============================ -->
-    <section class="section" id="story" aria-labelledby="story-title">
+    <section class="section" id="story">
       <div class="container">
-        <div class="section-head reveal">
-          <span class="eyebrow">cómo empezó</span>
-          <h2 id="story-title">Nuestra Historia</h2>
-          <p>De todos los caminos que pudimos tomar, qué bonito que el destino nos haya llevado hasta el mismo altar. Acompáñanos en este momento tan especial para nosotros.</p>
-          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></div>
-        </div>
 
         <div class="story-quote reveal">
           <p class="overline story-quote-kicker">Nuestra fe</p>
@@ -368,10 +364,10 @@
 
           <article class="parents-card reveal">
             <span class="parents-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21h14"/><path d="M7.5 21V8.5c0-2 1.6-3.5 4-3.5s4.5 1.4 4.5 3.5V21"/><path d="M7.5 12h9"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3"/><path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4"/><path d="M5 21h14"/></svg>
             </span>
             <p class="parents-role">Papás del novio</p>
-            <h3>Aurora <span class="parents-and">y</span> Samuel</h3>
+            <h3>Aurora de la Puente Basabe <span class="parents-and">y</span> Samuel Evangelista Santana</h3>
           </article>
         </div>
       </div>
@@ -410,7 +406,7 @@
                   <span><a href="https://maps.app.goo.gl/dnGxC4YtKZa3KR3AA" target="_blank" rel="noopener">Abrir ubicación de la parroquia</a></span>
                 </li>
               </ul>
-              <a href="https://maps.app.goo.gl/dnGxC4YtKZa3KR3AA" class="btn-ec btn-ec--ghost" target="_blank" rel="noopener">Cómo llegar</a>
+              <a href="https://maps.app.goo.gl/dnGxC4YtKZa3KR3AA" class="btn-ec btn-ec--ghost btn-ec--pulse" target="_blank" rel="noopener">Cómo llegar</a>
             </div>
           </article>
 
@@ -461,7 +457,7 @@
                   <span><a href="https://maps.google.com/maps?q=16.830873489379883%2C-99.912841796875&z=17&hl=es" target="_blank" rel="noopener">Abrir ubicación de Casa Los Juanes</a></span>
                 </li>
               </ul>
-              <a href="#rsvp" class="btn-ec">Reservar mi lugar</a>
+              <a href="#rsvp" class="btn-ec btn-ec--pulse">Reservar mi lugar</a>
             </div>
           </article>
         </div>
@@ -648,7 +644,7 @@
                   <span class="fld-label" id="attend-label">¿Asistirás?</span>
                   <div class="attend-group" role="radiogroup" aria-labelledby="attend-label">
                     <div class="attend-opt">
-                      <input type="radio" id="attend-yes" name="attending" value="yes" checked>
+                      <input type="radio" id="attend-yes" name="attending" value="Si" checked>
                       <label for="attend-yes">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
                         ¡Con mucho gusto asistiré!
@@ -680,7 +676,7 @@
                 </div>
 
                 <div class="col-12 text-center" style="margin-top:.6rem">
-                  <button type="submit" class="btn-ec btn-ec--gold">Enviar mi confirmación</button>
+                  <button type="submit" class="btn-ec btn-ec--gold btn-ec--pulse">Enviar mi confirmación</button>
                 </div>
               </div>
             </form>
