@@ -228,6 +228,10 @@
         attending: attending ? attending.value : '',
         song:      document.getElementById('rsvp-song').value.trim(),
         note:      document.getElementById('rsvp-note').value.trim(),
+        // El Apps Script ya mapea datos.menu a su propia columna (línea 49 de
+        // google-apps-script.js). Se usa ese nombre de campo para que la
+        // restricción alimentaria caiga en su columna y no en el mensaje.
+        menu:      document.getElementById('rsvp-food').value.trim(),
         pases:     pasesAsignados > 0 ? pasesAsignados : ''
       };
 
@@ -244,11 +248,21 @@
         return;
       }
 
+      // OJO con el contrato de datos: el Apps Script hace
+      // JSON.parse(e.postData.contents), así que el cuerpo TIENE que ser JSON.
+      // Cambiarlo a formulario rompe doPost entero.
+      // El problema real es otro: fetch con mode:'no-cors' devuelve una
+      // respuesta OPACA — el status NO es legible desde acá. Por eso este bloque
+      // tampoco puede afirmar que se guardó. Lo que sí hace ahora es verificar
+      // que el pedido salió, y no mostrar el agradecimiento si falló.
       fetch(SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
         body: JSON.stringify(formData)
       }).then(function () {
+        // Con no-cors la promesa resuelve cuando el pedido SALE, no cuando el
+        // servidor confirma. Si llegó hasta acá, no hubo error de red.
         showSuccess(formData.attending === 'no');
       }).catch(function (err) {
         console.error('[RSVP] Error:', err);

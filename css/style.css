@@ -984,6 +984,10 @@ a:hover { color: var(--gold); }
   font-size: 1.3rem;
 }
 .rsvp-success.show { display: block; }
+.rsvp-success p { margin: 0; }
+.rsvp-success__title { font-size: 1.3rem; }
+.rsvp-success p + p { margin-top: .35rem; font-family: var(--ff-body); font-size: .95rem; }
+.rsvp-success__fix { color: var(--muted); font-size: .86rem !important; }
 
 /* =====================================================================
    Registry

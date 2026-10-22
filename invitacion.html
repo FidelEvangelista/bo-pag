@@ -667,7 +667,7 @@
                   <label class="fld-label" for="rsvp-song">
                     <span style="display:inline-flex;align-items:center;gap:.4rem">
                       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 18V5l10-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg>
-                      Una canción que te saque a bailar
+                      Una canción que te saque a bailar <span style="text-transform:none;letter-spacing:0;color:var(--muted)">(opcional)</span>
                     </span>
                   </label>
                   <input type="text" class="form-control" id="rsvp-song" name="song" placeholder="Artista — Canción">
@@ -675,7 +675,12 @@
 
                 <div class="col-12">
                   <label class="fld-label" for="rsvp-note">Un mensaje para la pareja <span style="text-transform:none;letter-spacing:0;color:var(--muted)">(opcional)</span></label>
-                  <textarea class="form-control" id="rsvp-note" name="note" rows="4" placeholder="Necesidades alimentarias, buenos deseos, o un mal chiste."></textarea>
+                  <textarea class="form-control" id="rsvp-note" name="note" rows="3" placeholder="Buenos deseos, o un mal chiste."></textarea>
+                </div>
+
+                <div class="col-12">
+                  <label class="fld-label" for="rsvp-food">¿Alguna restricción alimentaria? <span style="text-transform:none;letter-spacing:0;color:var(--muted)">(opcional)</span></label>
+                  <input type="text" class="form-control" id="rsvp-food" name="food" placeholder="Alergias, vegetariano, sin gluten…">
                 </div>
 
                 <div class="col-12 text-center" style="margin-top:.6rem">
@@ -685,7 +690,9 @@
             </form>
 
             <div class="rsvp-success" id="rsvpSuccess" role="status" aria-live="polite">
-              ¡Gracias por confirmar! No podemos esperar para celebrar contigo. 🌿
+              <p class="rsvp-success__title">¡Gracias por confirmar!</p>
+              <p>No podemos esperar para celebrar contigo. 🌿</p>
+              <p class="rsvp-success__fix">Si necesitás corregir algo, escribinos por WhatsApp y lo ajustamos.</p>
             </div>
           </div>
         </div>
