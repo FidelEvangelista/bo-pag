@@ -242,7 +242,7 @@
 
       if (SCRIPT_URL === 'PEGA_TU_URL_AQUI') {
         console.warn('[RSVP] No se configuró la URL de Apps Script. Los datos NO se guardan.');
-        showSuccess(formData.attending === 'no');
+        showSuccess(formData.attending === 'No');
         btn.disabled = false;
         btn.textContent = origText;
         return;
@@ -263,7 +263,7 @@
       }).then(function () {
         // Con no-cors la promesa resuelve cuando el pedido SALE, no cuando el
         // servidor confirma. Si llegó hasta acá, no hubo error de red.
-        showSuccess(formData.attending === 'no');
+        showSuccess(formData.attending === 'No');
       }).catch(function (err) {
         console.error('[RSVP] Error:', err);
         btn.disabled = false;
