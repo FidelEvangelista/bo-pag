@@ -25,10 +25,10 @@
     /* Velo de entrada: cubre la página con el MISMO color papel del sobre
        (#f6f6f4) y se desvanece al cargar, para que la invitación aparezca
        POCO A POCO al llegar desde el sobre.
-       Duración 3.2 s (venía de 0.9 s con ease-out) y curva suave en las DOS
-       puntas: el papel se queda quieto un instante, después se disuelve muy
-       despacio y termina de irse casi imperceptible, así el inicio de la
-       invitación emerge solo en vez de aparecer de golpe.
+       Duración 700 ms (venía de 3.2 s: sumado al espera del sobre daba ~4.7 s
+       de blanco acumulado). La curva arranca suave y termina suave, así el
+       inicio de la invitación emerge en vez de aparecer de golpe, pero sin
+       obligar a esperar. Es el rango 600-900 ms que pide la retro.
        Para volver a la entrada seca, borrá este bloque y el <div class="page-veil">. */
     .page-veil {
       position: fixed;
@@ -36,7 +36,7 @@
       z-index: 9999;
       background-color: #f6f6f4;
       pointer-events: none;
-      animation: pageVeilOut 3.2s cubic-bezier(0.35, 0, 0.5, 1) 0.05s forwards;
+      animation: pageVeilOut 700ms cubic-bezier(0.33, 0, 0.45, 1) 0.05s forwards;
     }
 
     @keyframes pageVeilOut {
@@ -98,14 +98,13 @@
 
       const ctx = canvas.getContext('2d');
 
-      // Cuándo arranca: el velo dura 3,2 s y empieza a los 0,05 s (ver .page-veil
-      // en el <style> de arriba), así que termina a los 3,25 s.
-      // A los 1,5 s al papel le queda ~45% de opacidad y la invitación ya se ve
-      // más de la mitad: el polvo nace ahí, con la invitación apareciendo, y sigue
-      // chispeando mucho después de los 3,25 s, ya sobre la página limpia.
+      // Cuándo arranca: el velo dura 700 ms y empieza a los 0,05 s (ver .page-veil
+      // en el <style> de arriba), así que termina a los 0,75 s.
+      // El polvo nace a mitad del velo, con la invitación ya asomando, y sigue
+      // chispeando después de que el papel se termina de ir.
       // Este es el piso: más temprano que esto el papel (#f6f6f4, casi opaco) tapa
       // la explosión y las partículas se ven lavadas.
-      const DUST_AT_MS = 1500;
+      const DUST_AT_MS = 380;
 
       let particles = [];
       let animFrameId = null;
@@ -140,16 +139,16 @@
             this.vx = Math.cos(angle) * speed;
             this.vy = Math.sin(angle) * speed - Math.random() * 1.2;
             this.size = Math.random() * 3.4 + 1.2;
-            this.decay = Math.random() * 0.007 + 0.004;
+            this.decay = Math.random() * 0.009 + 0.006;
           } else {
             // Polvo de hadas flotando suavemente por la invitación
             this.vx = (Math.random() - 0.5) * 1.1;
             this.vy = -Math.random() * 1.2 - 0.3;
             this.size = Math.random() * 2.8 + 1;
-            this.decay = Math.random() * 0.0045 + 0.0025;
+            this.decay = Math.random() * 0.006 + 0.004;
           }
 
-          this.alpha = Math.random() * 0.5 + 0.5;
+          this.alpha = Math.random() * 0.34 + 0.32;
           this.twinkleSpeed = Math.random() * 0.08 + 0.03;
           this.twinklePhase = Math.random() * Math.PI * 2;
           this.waveAngle = Math.random() * Math.PI * 2;
@@ -181,10 +180,10 @@
           context.translate(this.x, this.y);
 
           // Halo luminoso suave alrededor de cada partícula
-          const glowRadius = this.size * 3.8;
+          const glowRadius = this.size * 3.2;
           const grad = context.createRadialGradient(0, 0, 0, 0, 0, glowRadius);
           grad.addColorStop(0, `rgba(${this.color}, ${currentAlpha})`);
-          grad.addColorStop(0.4, `rgba(${this.color}, ${currentAlpha * 0.45})`);
+          grad.addColorStop(0.4, `rgba(${this.color}, ${currentAlpha * 0.32})`);
           grad.addColorStop(1, `rgba(${this.color}, 0)`);
 
           context.fillStyle = grad;
@@ -194,8 +193,8 @@
 
           // Núcleo brillante o estrella de 4 puntas
           if (this.isStar) {
-            const s = this.size * (1.5 + twinkle * 0.8);
-            context.fillStyle = `rgba(255, 255, 255, ${Math.min(1, currentAlpha * 1.2)})`;
+            const s = this.size * (1.4 + twinkle * 0.7);
+            context.fillStyle = `rgba(255, 255, 255, ${Math.min(1, currentAlpha * 1.0)})`;
             context.beginPath();
             context.moveTo(0, -s * 1.8);
             context.quadraticCurveTo(0, 0, s * 1.8, 0);
@@ -204,7 +203,7 @@
             context.quadraticCurveTo(0, 0, 0, -s * 1.8);
             context.fill();
           } else {
-            context.fillStyle = `rgba(255, 255, 255, ${Math.min(1, currentAlpha * 1.15)})`;
+            context.fillStyle = `rgba(255, 255, 255, ${Math.min(1, currentAlpha * 1.0)})`;
             context.beginPath();
             context.arc(0, 0, this.size * 0.65, 0, Math.PI * 2);
             context.fill();
@@ -221,8 +220,12 @@
         const centerX = window.innerWidth * 0.5;
         const centerY = window.innerHeight * 0.49;
 
-        // 1. Explosión suave y mágica desde el sello de lacre
-        for (let i = 0; i < 130; i++) {
+        // Intensidad reducida (pedido §3 de la retro visual). Antes: 130 de
+        // explosión + 75 ambientales = 205, y los destellos competían con los
+        // nombres, la fecha y los botones. Ahora 70 + 26 = 96, con menos alfa y
+        // decaimiento más rápido: el efecto se concentra en la entrada y después
+        // se apaga solo.
+        for (let i = 0; i < 70; i++) {
           const offsetR = Math.random() * 48;
           const offsetAngle = Math.random() * Math.PI * 2;
           particles.push(
@@ -234,8 +237,8 @@
           );
         }
 
-        // 2. Brillos ambientales repartidos sobre la pantalla de inicio de la invitación
-        for (let i = 0; i < 75; i++) {
+        // Brillos ambientales repartidos sobre la pantalla de inicio de la invitación
+        for (let i = 0; i < 26; i++) {
           particles.push(
             new FairyParticle(
               Math.random() * window.innerWidth,
@@ -406,7 +409,7 @@
                   <span><a href="https://maps.app.goo.gl/dnGxC4YtKZa3KR3AA" target="_blank" rel="noopener">Abrir ubicación de la parroquia</a></span>
                 </li>
               </ul>
-              <a href="https://maps.app.goo.gl/dnGxC4YtKZa3KR3AA" class="btn-ec btn-ec--ghost btn-ec--pulse" target="_blank" rel="noopener">Cómo llegar</a>
+              <a href="https://maps.app.goo.gl/dnGxC4YtKZa3KR3AA" class="btn-ec btn-ec--ghost" target="_blank" rel="noopener">Cómo llegar</a>
             </div>
           </article>
 
@@ -457,7 +460,7 @@
                   <span><a href="https://maps.google.com/maps?q=16.830873489379883%2C-99.912841796875&z=17&hl=es" target="_blank" rel="noopener">Abrir ubicación de Casa Los Juanes</a></span>
                 </li>
               </ul>
-              <a href="#rsvp" class="btn-ec btn-ec--pulse">Reservar mi lugar</a>
+              <a href="#rsvp" class="btn-ec">Reservar mi lugar</a>
             </div>
           </article>
         </div>
@@ -676,7 +679,7 @@
                 </div>
 
                 <div class="col-12 text-center" style="margin-top:.6rem">
-                  <button type="submit" class="btn-ec btn-ec--gold btn-ec--pulse">Enviar mi confirmación</button>
+                  <button type="submit" class="btn-ec btn-ec--gold">Enviar mi confirmación</button>
                 </div>
               </div>
             </form>

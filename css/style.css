@@ -162,8 +162,13 @@ a:hover { color: var(--gold); }
 .btn-ec--light { --b: #fff; color: var(--wine-deep); }
 .btn-ec--light:hover { background: transparent; color: #fff; border-color: #fff; }
 
-/* ---- Highlighted CTAs: a soft halo that pulses so the eye finds them fast.
-   Animation only — button colours, borders and typography stay untouched. */
+/* ---- Highlighted CTA: a soft halo that pulses so the eye finds the main
+   action fast.
+   Retired from all four secondary buttons (objective feedback §4: a permanent
+   pulse on "Cómo llegar", "Reservar mi lugar" and "Enviar mi confirmación"
+   competed with the real primary action). It is reserved for ONE button, and
+   even there it stops after three beats instead of running forever.
+   Animation only: button colours, borders and typography stay untouched. */
 .btn-ec--pulse { position: relative; }
 .btn-ec--pulse::after {
   content: "";
@@ -172,7 +177,7 @@ a:hover { color: var(--gold); }
   border: 1px solid var(--b);
   border-radius: inherit;
   pointer-events: none;
-  animation: btnPulse 2.6s ease-out infinite;
+  animation: btnPulse 2.6s ease-out 3;
 }
 @keyframes btnPulse {
   0%   { transform: scale(1);    opacity: .55; }
@@ -182,6 +187,13 @@ a:hover { color: var(--gold); }
 @media (prefers-reduced-motion: reduce) {
   .btn-ec--pulse::after { animation: none; opacity: 0; }
 }
+
+/* Microtransiciones de interacción (150-220 ms, referencia de la retro §4).
+   No dependen solo de hover: hay un estado :focus-visible equivalente para
+   navegación con teclado. */
+.btn-ec { transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
+.btn-ec:hover,
+.btn-ec:focus-visible { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0, 0, 0, .16); }
 
 /* =====================================================================
    Header / Navigation
@@ -1094,7 +1106,9 @@ a:hover { color: var(--gold); }
 /* =====================================================================
    Reveal animation
    ===================================================================== */
-.reveal { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .7s ease; }
+/* Reveals 400-600 ms y desplazamiento de 12-20 px (retro §5). Antes: .7s y
+   26px, que sumado a la espera del observer demoraba la lectura. */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity .5s ease, transform .5s ease; }
 .reveal.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }

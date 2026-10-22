@@ -152,10 +152,14 @@
       border-radius: 6px;
     }
 
-    /* Cartel negro "¡Toca Aquí!" */
+    /* Indicación de apertura, integrada a la paleta del sobre.
+       Antes era un globo negro (#1e2024) que contrastaba con la papelería
+       sobria. Ahora usa el mismo marrón cálido del lacre y borde dorado suave.
+       El texto es "Toca el sello para abrir" (antes "¡Toca Aquí!"): dice QUÉ
+       tocar y QUÉ pasa, en vez de una exclamación suelta. */
     .tooltip {
-      background-color: #1e2024;
-      color: #ffffff;
+      background-color: #4a3f35;
+      color: #fbf9f2;
       font-family: 'Montserrat', sans-serif;
       font-size: 14px;
       font-weight: 600;
@@ -164,8 +168,12 @@
       border-radius: 5px;
       margin-bottom: 14px;
       position: relative;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
-      animation: floatTooltip 1.8s infinite ease-in-out;
+      border: 1px solid rgba(179, 169, 137, 0.55);
+      box-shadow: 0 4px 12px rgba(74, 63, 53, 0.28);
+      /* La llamada de atención ya no es infinita: 3 repeticiones y se queda
+         quieta. El sello sigue respirando (ver .wax-seal-svg), pero el cartel
+         deja de competir con él enseguida. */
+      animation: floatTooltip 1.8s ease-in-out 3;
       /* El transform lo maneja la animación floatTooltip (una animación pisa al
          transition); acá importa el fundido, con el MISMO ritmo que el sello
          para que el CTA se vaya de una sola pieza. Sin espera, igual que él. */
@@ -183,9 +191,10 @@
       height: 0;
       border-left: 7px solid transparent;
       border-right: 7px solid transparent;
-      border-top: 7px solid #1e2024;
+      border-top: 7px solid #4a3f35;
     }
 
+    /* Llamada de atención corta: sube y baja 3 veces y se detiene. */
     @keyframes floatTooltip {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-5px); }
@@ -200,13 +209,15 @@
         drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.14));
       transition: transform 0.25s ease;
       transform-origin: center;
-      /* "Respiración": crece y decrece para invitar a tocar */
+      /* "Respiración" suave: antes llegaba a 1.10 (10%), que se leía como un
+         latido ansioso. Ahora llega a 1.025 (2.5%): se percibe que está vivo
+         sin crecer de forma exagerada. */
       animation: sealBreathe 2.4s ease-in-out infinite;
     }
 
     @keyframes sealBreathe {
       0%, 100% { transform: scale(1); }
-      50%      { transform: scale(1.10); }
+      50%      { transform: scale(1.025); }
     }
 
     .seal-wrapper:hover .wax-seal-svg {
@@ -645,7 +656,7 @@
 
   <!-- 3. CARTEL "¡Toca Aquí!" Y SELLO DE LACRE EN RELIEVE "A & F" -->
   <div class="seal-wrapper" id="sealTrigger" role="button" tabindex="0" aria-label="Abrir la invitación de Astrid y Fidel">
-    <div class="tooltip">¡Toca Aquí!</div>
+    <div class="tooltip">Toca el sello para abrir</div>
 
     <svg class="wax-seal-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -724,6 +735,17 @@
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    // ==== Coordinación de la secuencia (pedido §1 de la retro visual) ====
+    // Antes: el sobre esperaba 1550 ms fijos y saltaba a invitacion.html, que
+    // arrancaba SU PROPIO velo de 3.2 s desde cero. Dos animaciones en paralelo
+    // que nadie coordinaba => ~4.7 s de papel en blanco acumulado.
+    // Ahora: el sobre espera a que su fundido TERMINE DE VERDAD (transitionend)
+    // antes de navegar, no a un cronómetro. Y el velo de la invitación bajó a
+    // 700 ms (ver .page-veil en invitacion.html), así que la llegada se siente
+    // como la continuación del sobre, no como una segunda carga.
+    const SEAL_FADE_MS = 150;  // debe coincidir con la transition de .seal-wrapper
+    const NEXT_SAFETY_MS = 4000; // red de seguridad: navega igual si transitionend no llega
+
     // La solapa se abre lento (2,6 s, igual que la transición de .flap-shadow-wrap)
     // y el sello se queda quieto en su lugar mientras eso pasa (ver stage-1).
     // El sello se disuelve RECIÉN cuando el sobre terminó de abrirse, y el salto
@@ -735,15 +757,13 @@
     // overlay. Con esta curva eso pasa a los 1,3 s, así que a los 1,4 s ya no hay
     // nada que mostrar del sobre abierto.
     // El giro NO se tocó: sigue durando 2,6 s (ver .flap-shadow-wrap).
-    // Después va todo junto: el fundido (0,15 s, ver CSS) y el salto apenas
-    // termina. Cero pantalla quieta antes del fade de la invitación.
     // Con movimiento reducido no hay transiciones (ver el bloque de CSS): la
     // solapa se abre de golpe, así que las etapas se adelantan en vez de dejar al
     // CTA colgado en pantalla hasta el salto.
     const FLAP_OPEN_MS = reduceMotion ? 350 : 2600;     // largo del giro de la solapa (sin tocar)
     const SEAL_FADE_AT_MS = reduceMotion ? 350 : 1400;  // cuando la solapa ya se ve arriba
                                    // + 0,15 s de fundido sin retardo = se va a los 1,55 s
-    const NEXT_DELAY_MS = reduceMotion ? 450 : 1550;
+    const NEXT_DELAY_MS = reduceMotion ? 450 : 1550;    // respaldo por si transitionend no llega
 
     const sealTrigger = document.getElementById('sealTrigger');
     const envelopeOverlay = document.getElementById('envelopeOverlay');
@@ -774,9 +794,35 @@
       // Fin del efecto -> entrar a la página de inicio de la invitación.
       // location.search se arrastra a propósito: el invitado puede entrar acá con
       // un cupo en la URL (ej. ?pases=4) y la invitación tiene que recibirlo.
-      timers.push(setTimeout(() => {
+      function goToInvitation() {
         window.location.href = NEXT_PAGE + location.search + location.hash;
-      }, NEXT_DELAY_MS));
+      }
+
+      if (reduceMotion) {
+        timers.push(setTimeout(goToInvitation, NEXT_DELAY_MS));
+        return;
+      }
+
+      // Navega cuando el fundido del sello TERMINÓ DE VERDAD. Esperar al evento
+      // en vez del cronómetro evita el corte: si el navegador demora un frame en
+      // pintar el fundido, el salto igual ocurre después, no antes.
+      let navigated = false;
+      function navigateOnce() {
+        if (navigated) return;
+        navigated = true;
+        goToInvitation();
+      }
+
+      sealTrigger.addEventListener('transitionend', function onFadeEnd(e) {
+        if (e.propertyName !== 'opacity') return;
+        if (!document.body.classList.contains('stage-3')) return;
+        sealTrigger.removeEventListener('transitionend', onFadeEnd);
+        navigateOnce();
+      });
+
+      // Red de seguridad: si transitionend no llega (pestaña en segundo plano,
+      // transición interrumpida), navega igual pasado el presupuesto.
+      timers.push(setTimeout(navigateOnce, NEXT_DELAY_MS + NEXT_SAFETY_MS));
     }
 
     function resetEnvelope() {
