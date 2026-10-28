@@ -992,7 +992,7 @@ a:hover { color: var(--gold); }
 /* =====================================================================
    Registry
    ===================================================================== */
-.registry-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(1.2rem, 3vw, 2rem); }
+.registry-grid{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:flex-start!important;gap:2rem!important}
 .reg-card {
   background: #fff;
   border: 1px solid var(--blush-deep);
@@ -1265,7 +1265,7 @@ a:hover { color: var(--gold); }
   .tl-dot, .tl-item:nth-child(even) .tl-dot { left: 3px; right: auto; }
 
   .detail-grid { grid-template-columns: 1fr; }
-  .registry-grid { grid-template-columns: 1fr; }
+  .registry-grid{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:flex-start!important;gap:2rem!important}
   .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 150px; }
   .party-grid { grid-template-columns: 1fr; }
 }
@@ -1426,3 +1426,25 @@ a:hover { color: var(--gold); }
   15%  { opacity: 1; }
   100% { opacity: 0; transform: translate(var(--drift, 0px), -72px) scale(.1) rotate(160deg); }
 }
+
+
+/* Centrado extra */
+
+
+
+
+
+/* Forzar centrado registro */
+#registry .section-head{display:flex;flex-direction:column;align-items:center;text-align:center}
+#registry .sprig{margin:1rem auto}
+#registry .registry-grid{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:flex-start!important;gap:2rem!important}
+#registry .reg-card{flex:0 1 300px !important;width:300px !important;max-width:300px !important;margin:0 !important;text-align:center !important;align-items:center !important}
+#registry .reg-card > *{text-align:center !important;align-self:center !important}
+
+
+/* ULTRA CENTRADO */
+section#registry .container,section#registry .section-head,section#registry .registry-grid{text-align:center !important;justify-content:center !important}
+section#registry .registry-grid{display:flex !important;flex-direction:row !important;flex-wrap:wrap !important;gap:2rem !important}
+section#registry .reg-card{float:none !important;margin-left:auto !important;margin-right:auto !important}
+
+.center-grid{display:flex!important;justify-content:center!important;flex-wrap:wrap!important;gap:2rem!important;margin:0 auto!important}
