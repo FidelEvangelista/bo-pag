@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probar la invitación — atajos</title>
+<style>
+  :root {
+    --ivory:      #F7EADD;
+    --blush:      #F3EADC;
+    --blush-deep: #E4D5BC;
+    --wine:       #1E2E4F;
+    --gold:       #A67C38;
+    --ink:        #1B2333;
+    --muted:      #5A6478;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1.25rem 4rem;
+    background: var(--ivory);
+    color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    line-height: 1.55;
+  }
+  .hoja { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 1.6rem; color: #1E2E4F; margin: 0 0 .3rem; }
+  .sub { color: #6b6355; font-size: .92rem; margin: 0 0 2rem; }
+  h2 {
+    font-size: .78rem; letter-spacing: .18em; text-transform: uppercase;
+    color: #A67C38; margin: 2.2rem 0 .9rem; font-weight: 600;
+  }
+  .fila { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+  button {
+    font: inherit; cursor: pointer; padding: .7rem 1.1rem;
+    border: 1px solid #E4D5BC; border-radius: 3px;
+    background: #fff; color: #1B2333;
+  }
+  button:hover { border-color: #A67C38; }
+  button b { color: #A67C38; }
+  p.nota { font-size: .88rem; color: #5b6470; margin: .7rem 0 0; }
+  code {
+    font-family: Consolas, monospace; font-size: .84rem;
+    background: #F3EADC; padding: .1rem .35rem; border-radius: 3px;
+  }
+  .aviso {
+    margin-top: 2.6rem; padding: .9rem 1.1rem;
+    border-left: 3px solid #A67C38; background: #F3EADC;
+    font-size: .88rem;
+  }
+</head>
+<body>
+<h1>Probar la invitación</h1>
+<p class="sub">Atajo local para ver la sección <b>Boletos Asignados</b> sin tener que escribir la URL con <code>?pases=N</code>.
+Este archivo vive en <code>recursos/</code>, que no se publica: no afecta a la invitación.</p>
+
+<h2>Vista previa sin parámetro (la más confiable)</h2>
+<div class="fila">
+  <button onclick="ir('../invitacion.html#boletos')">Abrir con #boletos</button>
+</div>
+<p class="nota">Muestra la sección con un número de ejemplo. Es <b>CSS puro</b>, así que aparece incluso si el navegador todavía tiene el JavaScript viejo en caché — que es exactamente lo que impedía verla.</p>
+
+<h2>Pases asignados a un invitado</h2>
+<div class="fila">
+  <button onclick="ir('../invitacion.html?pases=1', this)"><b>1</b> Boleto (singular)</button>
+  <button onclick="ir('../invitacion.html?pases=2', this)"><b>2</b> Boletos</button>
+  <button onclick="ir('../invitacion.html?pases=4', this)"><b>4</b> Boletos</button>
+  <button onclick="ir('../invitacion.html?pases=10', this)"><b>10</b> Boletos</button>
+</div>
+<p class="nota">La sección aparece entre <b>Dress Code</b> y <b>Vendrás</b> (RSVP), con el boleto dorado y el número. Es una página completa, así que hay que bajar con el scroll.</p>
+
+<h2>Sin cupo (invitación genérica)</h2>
+<div class="fila">
+  <button onclick="ir('../invitacion.html', this)">Abrir sin parámetro</button>
+</div>
+<p class="nota">Acá la sección <b>no debe verse</b>: la invitación es la normal, sin boletos.</p>
+
+<h2>Flujo completo (con el sobre)</h2>
+<div class="fila">
+  <button onclick="ir('../index.html?pases=4', this)">Sobre &rarr; invitación, 4 boletos</button>
+</div>
+<p class="nota">Arranca en la portada del sobre y al abrirlo tiene que llegar a la invitación <b>conservando</b> el <code>?pases=4</code>.</p>
+
+<h2>Generador de links</h2>
+<div class="fila">
+  <button onclick="ir('generador-links.html', this)">Abrir el generador</button>
+</div>
+<p class="nota">Los links que genera apuntan al sitio publicado, así que todavía no muestran los boletos hasta que se despliegue.</p>
+
+<p><button onclick="ir('../invitacion.html', this)">Abrir la invitación sin parámetro</button></p>
+
+<p class="nota"><b>Recordá:</b> Ctrl + F5 después de cada cambio de código, para saltar el caché.</p>
+
+<script>
+  function ir(destino) {
+    window.location.href = destino;
+  }
+</script>
+</body>
+</html>

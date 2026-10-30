@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelsey & Enoc - Invitación de Boda</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Montserrat', sans-serif;
+      background-color: #f6f6f4;
+    }
+
+    /* Textura de papel lino diagonal idéntica a la imagen */
+    .paper-texture {
+      background-color: #f6f6f4;
+      background-image: 
+        repeating-linear-gradient(
+          125deg,
+          rgba(0, 0, 0, 0.018) 0px,
+          rgba(0, 0, 0, 0.018) 1px,
+          transparent 1px,
+          transparent 3px
+        ),
+        repeating-linear-gradient(
+          35deg,
+          rgba(255, 255, 255, 0.65) 0px,
+          rgba(255, 255, 255, 0.65) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+    }
+
+    /* =========================================================
+       LIENZO DE POLVO DE HADAS (FAIRY DUST CANVAS)
+       ========================================================= */
+    #fairyDustCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 35;
+    }
+
+    /* =========================================================
+       CAPA DEL SOBRE HORIZONTAL (PANTALLA COMPLETA PC)
+       ========================================================= */
+    .envelope-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      perspective: 1800px;
+      overflow: hidden;
+      transition: opacity 0.95s ease;
+    }
+
+    /* Papel base del sobre */
+    .envelope-base {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* Contenedor de la solapa superior con sombra realista proyectada hacia abajo */
+    .flap-shadow-wrap {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      transform-origin: top center;
+      filter: 
+        drop-shadow(0px 6px 7px rgba(0, 0, 0, 0.20))
+        drop-shadow(0px 14px 22px rgba(0, 0, 0, 0.08))
+        drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.15));
+      transition: 
+        transform 0.85s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.65s ease 0.15s;
+    }
+
+    /* Solapa triangular horizontal superior con punta inferior redondeada */
+    .envelope-flap {
+      width: 100%;
+      height: 100%;
+      clip-path: url(#horizontalFlapClip);
+    }
+
+    /* =========================================================
+       SELLO DE LACRE Y ETIQUETA "¡Toca Aquí!"
+       ========================================================= */
+    .seal-wrapper {
+      position: fixed;
+      left: 50%;
+      top: 49%;
+      transform: translate(-50%, -50%);
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: opacity 1.35s ease, transform 1.35s ease;
+    }
+
+    /* Cartel negro "¡Toca Aquí!" */
+    .tooltip {
+      background-color: #1e2024;
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      padding: 8px 16px;
+      border-radius: 5px;
+      margin-bottom: 14px;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+      animation: floatTooltip 1.8s infinite ease-in-out;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tooltip::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 7px solid #1e2024;
+    }
+
+    @keyframes floatTooltip {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    /* Sello de lacre SVG en relieve */
+    .wax-seal-svg {
+      width: 126px;
+      height: 126px;
+      filter: 
+        drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.18))
+        drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.14));
+      transition: transform 0.25s ease;
+    }
+
+    .seal-wrapper:hover .wax-seal-svg {
+      transform: scale(1.04);
+    }
+
+    /* =========================================================
+       SECUENCIA DE ANIMACIÓN EXACTA DEL VIDEO
+       ========================================================= */
+    /* Etapa 1: Se oculta el letrero y se abre la solapa dejando solo el sello en el fondo blanco */
+    body.stage-1 .tooltip {
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+    }
+
+    body.stage-1 .flap-shadow-wrap {
+      transform: rotateX(180deg);
+      opacity: 0;
+    }
+
+    /* Etapa 2: El papel blanco se desvanece revelando la invitación */
+    body.stage-2 .envelope-overlay {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Etapa 3: El sello se disuelve entre el polvo de hadas sobre la foto */
+    body.stage-3 .seal-wrapper {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.06);
+      pointer-events: none;
+    }
+
+    /* =========================================================
+       INVITACIÓN DE BODA (REVELADA AL ABRIRSE EL SOBRE)
+       ========================================================= */
+    .invitation-page {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      background-color: #ffffff;
+    }
+
+    .invitation-header {
+      position: relative;
+      width: 100%;
+      background: #ffffff;
+      padding: 20px 40px 16px;
+      text-align: center;
+      border-bottom: 1px solid #d8d5ce;
+      z-index: 2;
+    }
+
+    .couple-names {
+      font-family: 'Alex Brush', cursive;
+      font-size: 54px;
+      font-weight: 400;
+      color: #4a4744;
+      line-height: 1.05;
+    }
+
+    .wedding-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 500;
+      color: #5c5854;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    .menu-circle {
+      position: absolute;
+      right: 42px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background-color: #c9c7c3;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .menu-circle span {
+      width: 18px;
+      height: 2px;
+      background-color: #ffffff;
+      border-radius: 1px;
+    }
+
+    .invitation-hero {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      background-image: 
+        linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.12) 0%,
+          rgba(255, 255, 255, 0.18) 52%,
+          rgba(255, 255, 255, 0.88) 92%,
+          rgba(255, 255, 255, 0.98) 100%
+        ),
+        url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1800&q=85');
+      background-size: cover;
+      background-position: center 30%;
+      filter: brightness(1.05) contrast(0.93);
+    }
+
+    /* Botón discreto para repetir la animación */
+    .replay-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      z-index: 40;
+      background: rgba(30, 32, 36, 0.82);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    body.stage-3 .replay-btn {
+      opacity: 1;
+      pointer-events: auto;
+      transition-delay: 1.2s;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Definición geométrica de la solapa horizontal con punta redondeada -->
+  <svg width="0" height="0" style="position: absolute;">
+    <defs>
+      <clipPath id="horizontalFlapClip" clipPathUnits="objectBoundingBox">
+        <path d="M 0.02,0 L 0.465,0.655 Q 0.50,0.715 0.535,0.655 L 0.98,0 Z" />
+      </clipPath>
+    </defs>
+  </svg>
+
+  <!-- 1. CONTENIDO DE LA INVITACIÓN (DETRÁS DEL SOBRE) -->
+  <main class="invitation-page">
+    <header class="invitation-header">
+      <h1 class="couple-names">Kelsey &amp; Enoc</h1>
+      <p class="wedding-subtitle">Te invitamos a nuestra boda</p>
+      <div class="menu-circle" title="Menú">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </header>
+    <section class="invitation-hero"></section>
+  </main>
+
+  <!-- 2. SOBRE HORIZONTAL TEXTURIZADO -->
+  <div class="envelope-overlay" id="envelopeOverlay">
+    <div class="envelope-base paper-texture"></div>
+    <div class="flap-shadow-wrap">
+      <div class="envelope-flap paper-texture"></div>
+    </div>
+  </div>
+
+  <!-- 3. CARTEL "¡Toca Aquí!" Y SELLO DE LACRE EN RELIEVE "K & E" -->
+  <div class="seal-wrapper" id="sealTrigger" role="button" aria-label="Abrir invitación">
+    <div class="tooltip">¡Toca Aquí!</div>
+
+    <svg class="wax-seal-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="waxBodyGrad" cx="38%" cy="32%" r="68%">
+          <stop offset="0%" stop-color="#f7f4e8"/>
+          <stop offset="45%" stop-color="#e8e2cc"/>
+          <stop offset="82%" stop-color="#d5cdb2"/>
+          <stop offset="100%" stop-color="#b8ae8e"/>
+        </radialGradient>
+
+        <linearGradient id="innerRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#bfb697"/>
+          <stop offset="50%" stop-color="#ded8c1"/>
+          <stop offset="100%" stop-color="#faf8f0"/>
+        </linearGradient>
+
+        <radialGradient id="innerFaceGrad" cx="45%" cy="40%" r="58%">
+          <stop offset="0%" stop-color="#f4f0e1"/>
+          <stop offset="70%" stop-color="#e4dec7"/>
+          <stop offset="100%" stop-color="#cfc7ab"/>
+        </radialGradient>
+
+        <filter id="embossText" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="1.2" dy="1.5" stdDeviation="0.6" flood-color="#ffffff" flood-opacity="0.85"/>
+          <feDropShadow dx="-1" dy="-1" stdDeviation="0.6" flood-color="#7c7252" flood-opacity="0.55"/>
+        </filter>
+      </defs>
+
+      <!-- Contorno orgánico del sello de lacre -->
+      <path d="M 100,10
+               C 126,9 152,19 169,38
+               C 186,57 192,81 190,107
+               C 188,134 176,158 154,173
+               C 132,188 108,192 82,188
+               C 55,184 31,171 18,148
+               C 5,125 7,96 14,70
+               C 21,44 38,24 63,15
+               C 76,10 88,11 100,10 Z"
+            fill="url(#waxBodyGrad)"
+            stroke="#c6bd9f"
+            stroke-width="1.5"/>
+
+      <path d="M 98,15
+               C 123,14 147,23 163,41
+               C 179,59 185,81 183,106
+               C 181,131 170,153 149,167
+               C 128,181 106,185 82,181
+               C 57,177 35,165 23,144
+               C 11,123 13,96 19,72
+               C 26,47 42,29 65,20
+               C 77,15 88,16 98,15 Z"
+            fill="none"
+            stroke="#fbf9f2"
+            stroke-width="2"
+            opacity="0.65"/>
+
+      <circle cx="100" cy="100" r="66" fill="url(#innerRingGrad)" stroke="#b3a989" stroke-width="1.2"/>
+      <circle cx="100" cy="100" r="61" fill="url(#innerFaceGrad)" stroke="#f9f6ec" stroke-width="1.5"/>
+
+      <g filter="url(#embossText)" fill="#968b6c" font-family="'Cormorant Garamond', Georgia, serif" font-weight="600">
+        <text x="68" y="108" font-size="44" text-anchor="middle">K</text>
+        <text x="101" y="125" font-size="33" text-anchor="middle">&amp;</text>
+        <text x="133" y="108" font-size="44" text-anchor="middle">E</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- 4. LIENZO DE PARTÍCULAS DE POLVO DE HADAS -->
+  <canvas id="fairyDustCanvas"></canvas>
+
+  <button class="replay-btn" id="replayBtn">Repetir animación</button>
+
+  <script>
+    const sealTrigger = document.getElementById('sealTrigger');
+    const envelopeOverlay = document.getElementById('envelopeOverlay');
+    const replayBtn = document.getElementById('replayBtn');
+    const canvas = document.getElementById('fairyDustCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let timers = [];
+    let isOpen = false;
+    let particles = [];
+    let animFrameId = null;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Paleta mágica de polvo de hadas (dorados, champán y blanco perlado)
+    const dustColors = [
+      '255, 252, 235', // Blanco cálido brillante
+      '248, 228, 168', // Oro champán
+      '230, 198, 116', // Dorado clásico
+      '255, 244, 206', // Perla luminosa
+      '218, 180, 92'   // Dorado intenso
+    ];
+
+    class FairyParticle {
+      constructor(x, y, isBurst) {
+        this.x = x;
+        this.y = y;
+        this.color = dustColors[Math.floor(Math.random() * dustColors.length)];
+        this.isStar = Math.random() < 0.35; // 35% son destellos de 4 puntas
+
+        if (isBurst) {
+          // Estela mágica que nace del sello al disolverse
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 5.2 + 0.6;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed - Math.random() * 1.2;
+          this.size = Math.random() * 3.4 + 1.2;
+          this.decay = Math.random() * 0.007 + 0.004;
+        } else {
+          // Polvo de hadas flotando suavemente por la invitación
+          this.vx = (Math.random() - 0.5) * 1.1;
+          this.vy = -Math.random() * 1.2 - 0.3;
+          this.size = Math.random() * 2.8 + 1;
+          this.decay = Math.random() * 0.0045 + 0.0025;
+        }
+
+        this.alpha = Math.random() * 0.5 + 0.5;
+        this.twinkleSpeed = Math.random() * 0.08 + 0.03;
+        this.twinklePhase = Math.random() * Math.PI * 2;
+        this.waveAngle = Math.random() * Math.PI * 2;
+        this.waveSpeed = Math.random() * 0.04 + 0.015;
+      }
+
+      update() {
+        this.waveAngle += this.waveSpeed;
+        this.twinklePhase += this.twinkleSpeed;
+
+        // Movimiento suave con ligera turbulencia de aire
+        this.x += this.vx + Math.sin(this.waveAngle) * 0.45;
+        this.y += this.vy;
+
+        // Desaceleración progresiva para que floten
+        this.vx *= 0.985;
+        this.vy = this.vy * 0.985 - 0.012; // Flotabilidad ascendente sutil
+
+        this.alpha -= this.decay;
+      }
+
+      draw(context) {
+        if (this.alpha <= 0) return;
+
+        const twinkle = (Math.sin(this.twinklePhase) + 1) * 0.5; // 0 a 1
+        const currentAlpha = Math.max(0, this.alpha * (0.45 + twinkle * 0.55));
+
+        context.save();
+        context.translate(this.x, this.y);
+
+        // Halo luminoso suave alrededor de cada partícula
+        const glowRadius = this.size * 3.8;
+        const grad = context.createRadialGradient(0, 0, 0, 0, 0, glowRadius);
+        grad.addColorStop(0, `rgba(${this.color}, ${currentAlpha})`);
+        grad.addColorStop(0.4, `rgba(${this.color}, ${currentAlpha * 0.45})`);
+        grad.addColorStop(1, `rgba(${this.color}, 0)`);
+
+        context.fillStyle = grad;
+        context.beginPath();
+        context.arc(0, 0, glowRadius, 0, Math.PI * 2);
+        context.fill();
+
+        // Núcleo brillante o estrella de 4 puntas
+        if (this.isStar) {
+          const s = this.size * (1.5 + twinkle * 0.8);
+          context.fillStyle = `rgba(255, 255, 255, ${Math.min(1, currentAlpha * 1.2)})`;
+          context.beginPath();
+          context.moveTo(0, -s * 1.8);
+          context.quadraticCurveTo(0, 0, s * 1.8, 0);
+          context.quadraticCurveTo(0, 0, 0, s * 1.8);
+          context.quadraticCurveTo(0, 0, -s * 1.8, 0);
+          context.quadraticCurveTo(0, 0, 0, -s * 1.8);
+          context.fill();
+        } else {
+          context.fillStyle = `rgba(255, 255, 255, ${Math.min(1, currentAlpha * 1.15)})`;
+          context.beginPath();
+          context.arc(0, 0, this.size * 0.65, 0, Math.PI * 2);
+          context.fill();
+        }
+
+        context.restore();
+      }
+    }
+
+    function triggerFairyDust() {
+      const centerX = window.innerWidth * 0.5;
+      const centerY = window.innerHeight * 0.49;
+
+      // 1. Explosión suave y mágica desde el sello de lacre
+      for (let i = 0; i < 130; i++) {
+        const offsetR = Math.random() * 48;
+        const offsetAngle = Math.random() * Math.PI * 2;
+        particles.push(
+          new FairyParticle(
+            centerX + Math.cos(offsetAngle) * offsetR,
+            centerY + Math.sin(offsetAngle) * offsetR,
+            true
+          )
+        );
+      }
+
+      // 2. Brillos ambientales repartidos sobre la pantalla de inicio de la invitación
+      for (let i = 0; i < 75; i++) {
+        particles.push(
+          new FairyParticle(
+            Math.random() * window.innerWidth,
+            Math.random() * window.innerHeight,
+            false
+          )
+        );
+      }
+
+      if (!animFrameId) {
+        animateFairyDust();
+      }
+    }
+
+    function animateFairyDust() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        particles[i].draw(ctx);
+        if (particles[i].alpha <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+
+      if (particles.length > 0) {
+        animFrameId = requestAnimationFrame(animateFairyDust);
+      } else {
+        animFrameId = null;
+      }
+    }
+
+    function openEnvelope() {
+      if (isOpen) return;
+      isOpen = true;
+
+      // Etapa 1: Se oculta "¡Toca Aquí!" y se abre la solapa dejando el sello sobre el fondo blanco
+      document.body.classList.add('stage-1');
+
+      // Etapa 2: Se desvanece el fondo blanco mostrando la invitación detrás del sello
+      timers.push(setTimeout(() => {
+        document.body.classList.add('stage-2');
+      }, 750));
+
+      // Etapa 3: El sello se disuelve y libera el polvo de hadas al entrar a la invitación
+      timers.push(setTimeout(() => {
+        document.body.classList.add('stage-3');
+        triggerFairyDust();
+      }, 950));
+    }
+
+    function resetEnvelope() {
+      timers.forEach(t => clearTimeout(t));
+      timers = [];
+      particles = [];
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      document.body.classList.remove('stage-3', 'stage-2', 'stage-1');
+      isOpen = false;
+    }
+
+    sealTrigger.addEventListener('click', openEnvelope);
+    envelopeOverlay.addEventListener('click', openEnvelope);
+    replayBtn.addEventListener('click', resetEnvelope);
+  </script>
+
+</body>
+</html>

@@ -292,6 +292,7 @@
     var FADE_IN_MS = 15000;
     var TARGET_VOL = 0.9;
     var fadeTimer = null;
+    var autoStarted = false;
 
     // Reproducir con fade-in (volumen de menos a más)
     function playMusic() {
@@ -299,6 +300,7 @@
       audio.volume = 0;
       audio.play().then(function () {
         playing = true;
+        autoStarted = true;
         var step = 0;
         fadeTimer = setInterval(function () {
           step += 1;
@@ -307,6 +309,23 @@
         }, FADE_IN_MS / 100);
       }).catch(function () {});
     }
+
+    // Intentar autoplay al cargar (con fade-in)
+    try {
+      playMusic();
+    } catch (e) {}
+
+    // Si el autoplay fue bloqueado, reproducir en la primera interacción del usuario
+    var tryAutoPlay = function () {
+      if (autoStarted || playing) return;
+      playMusic();
+      document.removeEventListener('click', tryAutoPlay);
+      document.removeEventListener('touchstart', tryAutoPlay);
+      document.removeEventListener('scroll', tryAutoPlay);
+    };
+    document.addEventListener('click', tryAutoPlay);
+    document.addEventListener('touchstart', tryAutoPlay);
+    document.addEventListener('scroll', tryAutoPlay, { passive: true });
 
     // Botón play/pause manual
     btn.addEventListener('click', function (e) {

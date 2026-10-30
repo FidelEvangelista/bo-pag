@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sobre Vectorial - 4 Estados e Interactivo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: #ffffff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px 90px;
+    }
+
+    /* =========================================================
+       CONTENEDOR PRINCIPAL Y CUADRÍCULA DE 4 ESTADOS
+       ========================================================= */
+    .stage-single {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 520px;
+      width: 100%;
+    }
+
+    .stage-grid {
+      display: none;
+      grid-template-columns: repeat(2, 420px);
+      column-gap: 65px;
+      row-gap: 45px;
+      justify-content: center;
+      align-items: end;
+      padding-top: 120px;
+    }
+
+    body.view-grid .stage-single {
+      display: none;
+    }
+
+    body.view-grid .stage-grid {
+      display: grid;
+    }
+
+    /* =========================================================
+       ESTRUCTURA DEL SOBRE (DIMENSIONES Y CAPAS)
+       ========================================================= */
+    .envelope {
+      position: relative;
+      width: 420px;
+      height: 270px;
+      cursor: pointer;
+      perspective: 1400px;
+    }
+
+    /* Versión más grande cuando se visualiza un solo sobre */
+    .stage-single .envelope {
+      transform: scale(1.25);
+      margin-top: 110px;
+    }
+
+    /* 1. Fondo interior del sobre (visible cuando está abierto) */
+    .env-back {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #d8d8d8 0%, #cfcfcf 100%);
+      border-radius: 3px;
+      z-index: 1;
+    }
+
+    /* 2. Tarjeta blanca interior */
+    .env-card {
+      position: absolute;
+      left: 30px;
+      right: 30px;
+      bottom: 12px;
+      height: 250px;
+      background: #ffffff;
+      border-radius: 2px;
+      box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.04);
+      z-index: 2;
+      transform: translateY(0);
+      opacity: 0;
+      transition: transform 0.75s cubic-bezier(0.25, 1, 0.35, 1), opacity 0.3s ease;
+    }
+
+    /* 3. Bolsillo frontal (Solapas laterales curvadas + Solapa inferior redondeada) */
+    .env-pocket {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+      display: block;
+    }
+
+    /* 4. Solapa superior (con giro 3D real) */
+    .env-flap-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 175px;
+      transform-origin: top center;
+      transform-style: preserve-3d;
+      z-index: 5;
+      transition: 
+        transform 0.75s cubic-bezier(0.4, 0, 0.2, 1),
+        filter 0.45s ease,
+        z-index 0s linear 0.37s;
+    }
+
+    .env-flap-front,
+    .env-flap-inner {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: block;
+    }
+
+    /* Cara interna de la solapa cuando se abre hacia arriba */
+    .env-flap-inner {
+      transform: rotateX(180deg);
+    }
+
+    /* =========================================================
+       LOS 4 ESTADOS EXACTOS DE LA IMAGEN
+       ========================================================= */
+
+    /* ESTADO 1 (Arriba Izquierda): Cerrado con solapa entreabierta y sombra pronunciada */
+    .envelope.state-lifted .env-flap-wrapper {
+      transform: rotateX(0deg);
+      filter: 
+        drop-shadow(0px 10px 9px rgba(0, 0, 0, 0.23))
+        drop-shadow(0px 3px 3px rgba(0, 0, 0, 0.16));
+      z-index: 5;
+    }
+
+    /* ESTADO 2 (Arriba Derecha): Cerrado plano con sombra sutil */
+    .envelope.state-flat .env-flap-wrapper {
+      transform: rotateX(0deg);
+      filter: 
+        drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.20))
+        drop-shadow(0px 4px 5px rgba(0, 0, 0, 0.08));
+      z-index: 5;
+    }
+
+    /* ESTADO 3 (Abajo Izquierda): Sobre abierto vacío */
+    .envelope.state-open .env-flap-wrapper {
+      transform: rotateX(180deg);
+      filter: drop-shadow(0px -1px 2px rgba(0, 0, 0, 0.05));
+      z-index: 0;
+      transition: 
+        transform 0.75s cubic-bezier(0.4, 0, 0.2, 1),
+        filter 0.45s ease,
+        z-index 0s linear 0.2s;
+    }
+
+    /* ESTADO 4 (Abajo Derecha): Sobre abierto con hoja blanca saliendo */
+    .envelope.state-card .env-flap-wrapper {
+      transform: rotateX(180deg);
+      filter: drop-shadow(0px -1px 2px rgba(0, 0, 0, 0.05));
+      z-index: 0;
+    }
+
+    .envelope.state-card .env-card {
+      opacity: 1;
+      transform: translateY(-120px);
+    }
+
+    /* =========================================================
+       BARRA INFERIOR DE CONTROLES PARA PROBAR ESTADOS
+       ========================================================= */
+    .controls {
+      position: fixed;
+      bottom: 24px;
+      display: flex;
+      gap: 8px;
+      background: #f4f4f4;
+      padding: 6px;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      z-index: 50;
+    }
+
+    .controls button {
+      border: none;
+      background: transparent;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .controls button.active {
+      background: #222;
+      color: #fff;
+    }
+
+    .controls .divider {
+      width: 1px;
+      background: #ddd;
+      margin: 4px 2px;
+    }
+
+    @media (max-width: 960px) {
+      .stage-grid {
+        grid-template-columns: 1fr;
+      }
+      .stage-single .envelope {
+        transform: scale(0.95);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- DEFINICIONES SVG REUTILIZABLES (CURVAS Y SOMBRAS IDÉNTICAS A LA IMAGEN) -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <!-- Degradados de papel gris claro -->
+      <linearGradient id="leftFlapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#e3e3e3"/>
+        <stop offset="100%" stop-color="#dddddd"/>
+      </linearGradient>
+
+      <linearGradient id="rightFlapGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#e1e1e1"/>
+        <stop offset="100%" stop-color="#dbdbdb"/>
+      </linearGradient>
+
+      <linearGradient id="bottomFlapGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%" stop-color="#e4e4e4"/>
+        <stop offset="100%" stop-color="#dcdcdc"/>
+      </linearGradient>
+
+      <linearGradient id="topFlapGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%" stop-color="#e4e4e4"/>
+        <stop offset="100%" stop-color="#dfdfdf"/>
+      </linearGradient>
+
+      <!-- Sombra de las solapas laterales sobre el interior -->
+      <filter id="sideShadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="-2" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.12"/>
+      </filter>
+
+      <!-- Sombra de la solapa inferior sobre las laterales -->
+      <filter id="bottomShadow" x="-10%" y="-15%" width="120%" height="130%">
+        <feDropShadow dx="0" dy="-2" stdDeviation="2" flood-color="#000000" flood-opacity="0.09"/>
+      </filter>
+
+      <!-- Plantilla del bolsillo frontal del sobre -->
+      <g id="envelope-pocket-graphic">
+        <!-- Solapa lateral izquierda con hombro superior redondeado -->
+        <path d="M 0,270 L 0,14 C 0,2 14,3 32,16 L 210,152 L 0,270 Z"
+              fill="url(#leftFlapGrad)" filter="url(#sideShadow)"/>
+
+        <!-- Solapa lateral derecha con hombro superior redondeado -->
+        <path d="M 420,270 L 420,14 C 420,2 406,3 388,16 L 210,152 L 420,270 Z"
+              fill="url(#rightFlapGrad)" filter="url(#sideShadow)"/>
+
+        <!-- Solapa inferior con punta central redondeada y pliegues suaves en las esquinas -->
+        <path d="M 0,270 
+                 L 0,262 
+                 C 10,252 24,242 40,231
+                 L 190,131 
+                 Q 210,118 230,131 
+                 L 380,231 
+                 C 396,242 410,252 420,262 
+                 L 420,270 Z"
+              fill="url(#bottomFlapGrad)" filter="url(#bottomShadow)"/>
+
+        <!-- Líneas sutiles de bisel en la solapa inferior (idénticas a la imagen) -->
+        <path d="M 2,265 C 14,254 28,244 44,233 L 191,134 Q 210,122 229,134 L 376,233 C 392,244 406,254 418,265"
+              fill="none" stroke="#efefef" stroke-width="1.2" opacity="0.85"/>
+      </g>
+
+      <!-- Plantilla de la solapa superior (Cara frontal externa) -->
+      <g id="flap-front-graphic">
+        <path d="M 0,0 
+                 L 420,0 
+                 L 420,5 
+                 C 412,15 398,26 382,38 
+                 L 234,148 
+                 Q 210,166 186,148 
+                 L 38,38 
+                 C 22,26 8,15 0,5 Z"
+              fill="url(#topFlapGrad)"/>
+        <!-- Borde luminoso sutil del pliegue -->
+        <path d="M 2,6 C 12,16 25,26 40,37 L 187,146 Q 210,163 233,146 L 380,37 C 395,26 408,16 418,6"
+              fill="none" stroke="#eeeeee" stroke-width="1"/>
+      </g>
+
+      <!-- Plantilla de la solapa superior (Cara interna abierta con borde de forro) -->
+      <g id="flap-inner-graphic">
+        <path d="M 0,0 
+                 L 420,0 
+                 L 420,12 
+                 C 420,2 406,3 388,16 
+                 L 234,148 
+                 Q 210,166 186,148 
+                 L 32,16 
+                 C 14,3 0,2 0,12 Z"
+              fill="#e2e2e2"/>
+        <!-- Forro triangular interno más oscuro -->
+        <path d="M 18,4 
+                 L 402,4 
+                 L 225,134 
+                 Q 210,145 195,134 Z"
+              fill="#d6d6d6"/>
+      </g>
+    </defs>
+  </svg>
+
+  <!-- 1. VISTA DE SOBRE INTERACTIVO ÚNICO -->
+  <div class="stage-single">
+    <div class="envelope state-lifted" id="mainEnvelope" title="Haz clic para cambiar de estado">
+      <div class="env-back"></div>
+      <div class="env-card"></div>
+      <svg class="env-pocket" viewBox="0 0 420 270">
+        <use href="#envelope-pocket-graphic"/>
+      </svg>
+      <div class="env-flap-wrapper">
+        <svg class="env-flap-front" viewBox="0 0 420 175">
+          <use href="#flap-front-graphic"/>
+        </svg>
+        <svg class="env-flap-inner" viewBox="0 0 420 175">
+          <use href="#flap-inner-graphic"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. VISTA EN CUADRÍCULA 2x2 (IDÉNTICA A LA IMAGEN ADJUNTA) -->
+  <div class="stage-grid">
+    <!-- Arriba Izquierda: Sombra profunda -->
+    <div class="envelope state-lifted">
+      <div class="env-back"></div>
+      <div class="env-card"></div>
+      <svg class="env-pocket" viewBox="0 0 420 270"><use href="#envelope-pocket-graphic"/></svg>
+      <div class="env-flap-wrapper">
+        <svg class="env-flap-front" viewBox="0 0 420 175"><use href="#flap-front-graphic"/></svg>
+        <svg class="env-flap-inner" viewBox="0 0 420 175"><use href="#flap-inner-graphic"/></svg>
+      </div>
+    </div>
+
+    <!-- Arriba Derecha: Cerrado plano -->
+    <div class="envelope state-flat">
+      <div class="env-back"></div>
+      <div class="env-card"></div>
+      <svg class="env-pocket" viewBox="0 0 420 270"><use href="#envelope-pocket-graphic"/></svg>
+      <div class="env-flap-wrapper">
+        <svg class="env-flap-front" viewBox="0 0 420 175"><use href="#flap-front-graphic"/></svg>
+        <svg class="env-flap-inner" viewBox="0 0 420 175"><use href="#flap-inner-graphic"/></svg>
+      </div>
+    </div>
+
+    <!-- Abajo Izquierda: Abierto sin tarjeta -->
+    <div class="envelope state-open">
+      <div class="env-back"></div>
+      <div class="env-card"></div>
+      <svg class="env-pocket" viewBox="0 0 420 270"><use href="#envelope-pocket-graphic"/></svg>
+      <div class="env-flap-wrapper">
+        <svg class="env-flap-front" viewBox="0 0 420 175"><use href="#flap-front-graphic"/></svg>
+        <svg class="env-flap-inner" viewBox="0 0 420 175"><use href="#flap-inner-graphic"/></svg>
+      </div>
+    </div>
+
+    <!-- Abajo Derecha: Abierto con tarjeta blanca -->
+    <div class="envelope state-card">
+      <div class="env-back"></div>
+      <div class="env-card"></div>
+      <svg class="env-pocket" viewBox="0 0 420 270"><use href="#envelope-pocket-graphic"/></svg>
+      <div class="env-flap-wrapper">
+        <svg class="env-flap-front" viewBox="0 0 420 175"><use href="#flap-front-graphic"/></svg>
+        <svg class="env-flap-inner" viewBox="0 0 420 175"><use href="#flap-inner-graphic"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLES PARA PROBAR CADA ESTADO O VER LOS 4 JUNTOS -->
+  <div class="controls">
+    <button class="state-btn active" data-state="state-lifted">1. Solapa con sombra</button>
+    <button class="state-btn" data-state="state-flat">2. Cerrado plano</button>
+    <button class="state-btn" data-state="state-open">3. Abierto</button>
+    <button class="state-btn" data-state="state-card">4. Con tarjeta</button>
+    <div class="divider"></div>
+    <button id="toggleGridBtn">Ver los 4 juntos</button>
+  </div>
+
+  <script>
+    const mainEnvelope = document.getElementById('mainEnvelope');
+    const stateBtns = document.querySelectorAll('.state-btn');
+    const toggleGridBtn = document.getElementById('toggleGridBtn');
+    const states = ['state-lifted', 'state-flat', 'state-open', 'state-card'];
+    let currentIndex = 0;
+
+    function setEnvelopeState(index) {
+      document.body.classList.remove('view-grid');
+      toggleGridBtn.classList.remove('active');
+
+      currentIndex = index;
+      mainEnvelope.className = 'envelope ' + states[currentIndex];
+
+      stateBtns.forEach((btn, i) => {
+        btn.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    // Al hacer clic en el sobre, avanza suavemente por los 4 estados
+    mainEnvelope.addEventListener('click', () => {
+      const nextIndex = (currentIndex + 1) % states.length;
+      setEnvelopeState(nextIndex);
+    });
+
+    // Botones individuales de estado
+    stateBtns.forEach((btn, index) => {
+      btn.addEventListener('click', () => setEnvelopeState(index));
+    });
+
+    // Botón para ver la cuadrícula 2x2 idéntica a la imagen
+    toggleGridBtn.addEventListener('click', () => {
+      const isGrid = document.body.classList.toggle('view-grid');
+      toggleGridBtn.classList.toggle('active', isGrid);
+      if (isGrid) {
+        stateBtns.forEach(btn => btn.classList.remove('active'));
+      } else {
+        setEnvelopeState(currentIndex);
+      }
+    });
+  </script>
+
+</body>
+</html>

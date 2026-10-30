@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kelsey &amp; Enoc — Invitación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --paper:      #fffdf8;
+    --paper-2:    #f4ead6;
+    --paper-3:    #e9dcc5;
+    --gold:       #A67C38;
+    --gold-soft:  #D6C3A3;
+    --wine:       #1E2E4F;
+    --ink:        #1B2333;
+    --muted:      #5B6981;
+    --seam:       rgba(120, 94, 50, .5);
+    --ease:       cubic-bezier(.33, .1, .25, 1);
+    /* Sobre GIGANTE y HORIZONTAL: ancho máx. pero siempre 13/8 (apaisado) */
+    --env-w:      min(94vw, 150vh, 1500px);
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    overflow: hidden;
+    font-family: 'Montserrat', system-ui, sans-serif;
+    color: var(--ink);
+    background: #efe6d6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===================== ESCENARIO ===================== */
+  .stage {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(115% 85% at 50% -10%, #fdf7ec 0%, #f5ecdc 48%, #eadcc4 100%);
+  }
+
+  /* ===================== INVITACIÓN (detrás) ===================== */
+  .invite {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1.1rem, 3vh, 2.2rem);
+    padding: clamp(1.5rem, 5vw, 3rem);
+    text-align: center;
+    opacity: 0;
+    transform: scale(1.06);
+    transition: opacity 1s ease .3s, transform 1.8s var(--ease) .3s;
+  }
+
+  .invite__eyebrow {
+    font-size: clamp(.6rem, 1.35vw, .78rem);
+    font-weight: 500;
+    letter-spacing: .42em;
+    text-indent: .42em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: clamp(.5rem, 1.4vh, 1rem);
+  }
+
+  .invite__names {
+    font-family: 'Great Vibes', cursive;
+    font-weight: 400;
+    font-size: clamp(2.7rem, 8.5vw, 6.4rem);
+    line-height: 1.02;
+    color: var(--wine);
+  }
+  .invite__names .amp { color: var(--gold); }
+
+  .invite__date {
+    margin-top: clamp(.6rem, 1.8vh, 1.2rem);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(.92rem, 2vw, 1.3rem);
+    letter-spacing: .24em;
+    text-indent: .24em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .invite__photo {
+    width: clamp(185px, 28vw, 315px);
+    aspect-ratio: 4 / 5;
+    border: clamp(6px, 1vw, 11px) solid #fffdf8;
+    /* Si la foto remota no carga, queda el degradado de abajo */
+    background-image:
+      url("https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=70"),
+      linear-gradient(150deg, #e8dcc6 0%, #cbb894 60%, #a98f63 100%);
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 0 0 1px rgba(166,124,56,.4), 0 24px 48px rgba(30,46,79,.22);
+  }
+
+  /* ===================== SOBRE ===================== */
+  .env {
+    position: relative;
+    z-index: 2;
+    width: var(--env-w);
+    aspect-ratio: 13 / 8;
+    filter:
+      drop-shadow(0 2px 0 rgba(255,255,255,.75))
+      drop-shadow(0 30px 55px rgba(30,46,79,.20))
+      drop-shadow(0 8px 16px rgba(30,46,79,.10));
+  }
+
+  /* Las 4 solapas = las 4 caras del dorso del sobre. Juntas forman
+     el rectángulo completo; sus hipotenusas dibujan la X central. */
+  .flap {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transition: transform 1.05s var(--ease), opacity .85s ease .1s;
+    will-change: transform, opacity;
+  }
+
+  .flap--tl {
+    top: 0; left: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    background: linear-gradient(135deg, #fffdf8, var(--paper-3));
+  }
+  .flap--tr {
+    top: 0; right: 0;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    background: linear-gradient(225deg, #fffdf8, var(--paper-3));
+  }
+  .flap--bl {
+    bottom: 0; left: 0;
+    clip-path: polygon(0 0, 100% 100%, 0 100%);
+    background: linear-gradient(45deg, #fffdf8, var(--paper-3));
+  }
+  .flap--br {
+    bottom: 0; right: 0;
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    background: linear-gradient(315deg, #fffdf8, var(--paper-3));
+  }
+
+  /* Las costuras, en SVG para que el ángulo sea EXACTO.
+     (con rotate(45deg) en un sobre 13/8 los trazos no caían
+     sobre las diagonales reales del rectángulo) */
+  .env__seam {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    transition: opacity .35s ease;
+  }
+  .env__seam svg { display: block; width: 100%; height: 100%; }
+  .env__seam line {
+    /* El grosor va SIEMPRE junto a vector-effect="non-scaling-stroke"
+       (atributo en el SVG + esta propiedad). Sin eso, 1.8 se interpreta
+       en unidades del viewBox y se escala ×12: barras de ~22px. */
+    stroke: var(--seam);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* ===================== SELLO ===================== */
+  .seal-wrap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 5;
+    width: clamp(84px, 8.6vw, 132px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    /* el drop-shadow va acá porque el clip-path del sello recorta su propia sombra */
+    filter: drop-shadow(0 10px 20px rgba(58,44,18,.35));
+    transition: transform .95s var(--ease), opacity .55s ease .5s;
+  }
+
+  .seal {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-content: center;
+    gap: .06em;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    color: #5c5346;
+    background:
+      radial-gradient(circle at 34% 26%, #fffaea 0%, rgba(255,250,234,0) 42%),
+      radial-gradient(circle at 68% 78%, rgba(126,96,40,.32) 0%, rgba(126,96,40,0) 55%),
+      radial-gradient(circle at 50% 50%, #e4d1a8 0%, #cdb27f 70%, #b99b66 100%);
+    clip-path: polygon(
+      50% 1.2%, 63.6% 2.4%, 74.2% 5.8%, 86.1% 13.9%, 92.4% 25.6%, 98.6% 36.2%,
+      99.3% 50.8%, 97.5% 63.6%, 93.9% 74.3%, 85% 86.2%, 74.4% 92.6%, 63.4% 98.4%,
+      49.3% 99.4%, 36.4% 97.6%, 25.4% 93.7%, 13.8% 85.8%, 5.9% 74.6%, 2.3% 63.5%,
+      0.7% 49.6%, 1.4% 37.8%, 6.1% 26.1%, 14.9% 13.6%, 25.9% 5.5%, 36.5% 1.9%
+    );
+    transition: transform .28s ease;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  .seal::after {
+    content: '';
+    position: absolute;
+    inset: 11%;
+    border: 1px solid rgba(92, 74, 40, .32);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .seal:hover  { transform: scale(1.05); }
+  .seal:active { transform: scale(.95); }
+  .seal:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
+
+  .seal__initials {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: clamp(.95rem, 2.1vw, 1.6rem);
+    line-height: 1;
+    letter-spacing: .04em;
+  }
+  .seal__amp {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(.62rem, 1.3vw, .95rem);
+    line-height: 1;
+    color: rgba(92, 74, 40, .8);
+  }
+
+  .seal__tip {
+    position: absolute;
+    bottom: calc(100% + .8rem);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: .4rem .85rem;
+    border-radius: 6px;
+    background: #1c1c1c;
+    color: #fff;
+    font-size: clamp(.68rem, 1.25vw, .83rem);
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity .2s ease;
+  }
+  .seal__tip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1c1c1c;
+  }
+
+  /* ===================== APERTURA ===================== */
+  body.is-open .flap--tl { transform: translate(-52%, -52%) rotate(-7deg); opacity: 0; }
+  body.is-open .flap--tr { transform: translate( 52%, -52%) rotate( 7deg); opacity: 0; }
+  body.is-open .flap--bl { transform: translate(-52%,  52%) rotate( 7deg); opacity: 0; }
+  body.is-open .flap--br { transform: translate( 52%,  52%) rotate(-7deg); opacity: 0; }
+
+  body.is-open .env__seam { opacity: 0; }
+  body.is-open .seal__tip { opacity: 0; }
+  body.is-open .seal-wrap {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.45);
+  }
+  body.is-open .invite { opacity: 1; transform: scale(1); }
+
+  /* ===================== ACCESIBILIDAD ===================== */
+  @media (prefers-reduced-motion: reduce) {
+    .flap, .env__seam, .seal-wrap, .seal, .invite, .seal__tip { transition: none !important; }
+    body.is-open .invite { opacity: 1; transform: none; }
+    body.is-open .flap   { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+  <main class="stage">
+
+    <!-- Contenido que aparece al abrirse -->
+    <section class="invite" id="invite">
+      <div>
+        <p class="invite__eyebrow">Te invitamos a nuestra boda</p>
+        <h1 class="invite__names">Kelsey <span class="amp">&amp;</span> Enoc</h1>
+        <p class="invite__date">Próximamente</p>
+      </div>
+      <div class="invite__photo" role="img" aria-label="Fotografía de la pareja"></div>
+    </section>
+
+    <!-- Sobre gigante horizontal (dorso: 4 solapas + X central) -->
+    <div class="env" id="env">
+      <div class="flap flap--tl"></div>
+      <div class="flap flap--tr"></div>
+      <div class="flap flap--bl"></div>
+      <div class="flap flap--br"></div>
+
+      <div class="env__seam" aria-hidden="true">
+        <svg viewBox="0 0 130 80" preserveAspectRatio="none">
+          <line x1="0"   y1="0"  x2="130" y2="80" vector-effect="non-scaling-stroke"></line>
+          <line x1="130" y1="0"  x2="0"   y2="80" vector-effect="non-scaling-stroke"></line>
+        </svg>
+      </div>
+
+      <div class="seal-wrap">
+        <span class="seal__tip">¡Toca aquí!</span>
+        <button class="seal" id="seal" type="button" aria-label="Abrir la invitación">
+          <span class="seal__initials">K.E</span>
+          <span class="seal__amp">&amp;</span>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Página de inicio de la invitación a la que se entra al abrir el sobre.
+    // (desde recursos/sobre_invitacion/ -> ../../index.html)
+    const NEXT_PAGE = '../../index.html';
+
+    const seal = document.getElementById('seal');
+    const flap = document.querySelector('.flap');
+    let gone = false;
+
+    function go() {
+      if (gone) return;
+      gone = true;
+      window.location.href = NEXT_PAGE;
+    }
+
+    seal.addEventListener('click', function () {
+      document.body.classList.add('is-open');
+
+      // Con movimiento reducido no hay animación que esperar
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        window.setTimeout(go, 300);
+        return;
+      }
+
+      // En cuanto las solapas terminan de salir, entramos a la invitación
+      flap.addEventListener('transitionend', function (e) {
+        if (e.propertyName === 'transform') go();
+      });
+
+      // Red de seguridad por si el evento no llega
+      window.setTimeout(go, 2000);
+    }, { once: true });
+  </script>
+
+</body>
+</html>

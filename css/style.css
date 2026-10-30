@@ -1,6 +1,6 @@
 /* =====================================================================
    Everly — Free Wedding Website Template by uiCookies
-   Palette : bordeaux wine · champagne gold · eucalyptus sage · blush ivory
+   Palette : slate blue · champagne gold · warm ivory
    Type    : Cormorant Garamond (display) · Pinyon Script (accent) · Jost (body)
    ===================================================================== */
 
@@ -8,13 +8,15 @@
   --ivory:      #F7EADD;   /* Ivory — page background            */
   --blush:      #F3EADC;   /* soft champagne section             */
   --blush-deep: #E4D5BC;   /* champagne borders / rules          */
-  --wine:       #1E2E4F;   /* Navy Blue — signature               */
-  --wine-deep:  #0D1B2A;   /* Midnight — dark sections / footer   */
+  --surface:    #FFFCF7;   /* Warm white — cards                  */
+  --wine:       #526580;   /* Slate blue — signature              */
+  --wine-hover: #40516A;   /* Deeper slate — primary interactions */
+  --wine-deep:  #34445A;   /* Soft dark blue — headings / footer  */
   --gold:       #A67C38;   /* Antique Gold accent                */
   --gold-soft:  #D6C3A3;   /* Champagne                           */
   --sage:       #8A97AD;   /* dusty blue-grey (companion)         */
   --sage-deep:  #5C6B84;
-  --ink:        #1B2333;   /* deep navy-charcoal text             */
+  --ink:        #34445A;   /* Soft dark blue — body text          */
   --muted:      #5B6981;   /* muted navy-grey                     */
 
   --ff-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
@@ -87,7 +89,7 @@ a:hover { color: var(--gold); }
 /* ---- Layout helpers ------------------------------------------------- */
 .container { max-width: var(--maxw); }
 
-.section { padding: clamp(4rem, 9vw, 8rem) 0; position: relative; }
+.section { padding: clamp(3rem, 6vw, 5rem) 0; position: relative; }
 .section--blush { background: var(--blush); }
 .section--tight { padding-top: clamp(3rem, 6vw, 5rem); }
 
@@ -161,6 +163,11 @@ a:hover { color: var(--gold); }
 .btn-ec--gold:hover { color: var(--gold); }
 .btn-ec--light { --b: #fff; color: var(--wine-deep); }
 .btn-ec--light:hover { background: transparent; color: #fff; border-color: #fff; }
+.btn-ec:not(.btn-ec--ghost):not(.btn-ec--gold):not(.btn-ec--light):is(:hover, :focus-visible) {
+  background: var(--wine-hover);
+  border-color: var(--wine-hover);
+  color: #fff;
+}
 
 /* ---- Highlighted CTA: a soft halo that pulses so the eye finds the main
    action fast.
@@ -475,12 +482,20 @@ a:hover { color: var(--gold); }
 .tl-body p { color: var(--muted); font-size: .95rem; margin: 0; }
 
 /* Story — featured quote */
+#story .story-quotes {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+}
+#story .story-quotes > .story-quote {
+  width: 100%;
+  min-width: 0;
+}
 .story-quote {
   position: relative;
   max-width: 720px;
   margin: 0 auto;
   text-align: center;
-  background: linear-gradient(180deg, #fff 0%, var(--ivory) 130%);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--ivory) 130%);
   border: 1px solid var(--blush-deep);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm), inset 0 0 0 6px rgba(214,195,163,.14);
@@ -556,7 +571,7 @@ a:hover { color: var(--gold); }
 .parents-card {
   position: relative;
   text-align: center;
-  background: linear-gradient(180deg, #fff 0%, #FFFBF3 100%);
+  background: linear-gradient(180deg, var(--surface) 0%, #FFFBF3 100%);
   border: 1px solid var(--gold-soft);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm), inset 0 0 44px rgba(214,195,163,.14);
@@ -630,7 +645,7 @@ a:hover { color: var(--gold); }
    ===================================================================== */
 .detail-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(1.5rem, 4vw, 3rem); }
 .detail-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--blush-deep);
   border-radius: var(--radius);
   overflow: hidden;
@@ -638,7 +653,7 @@ a:hover { color: var(--gold); }
   display: flex;
   flex-direction: column;
 }
-.section--blush .detail-card { background: var(--ivory); }
+.section--blush .detail-card { background: var(--surface); }
 .detail-frame { position: relative; aspect-ratio: 4 / 3; background: var(--blush-deep); }
 .detail-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .detail-frame .tag {
@@ -994,7 +1009,7 @@ a:hover { color: var(--gold); }
    ===================================================================== */
 .registry-grid{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:flex-start!important;gap:2rem!important}
 .reg-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--blush-deep);
   border-radius: var(--radius);
   padding: 2rem 1.7rem;

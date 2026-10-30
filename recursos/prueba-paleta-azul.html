@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prueba de paleta azul — Astrid y Fidel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eee8e0; color: #34445a; font-family: "Jost", sans-serif; line-height: 1.6; }
+    .intro { max-width: 1000px; margin: auto; padding: 28px 20px; text-align: center; }
+    .intro h1 { margin: 0; font: 500 34px/1.2 "Cormorant Garamond", Georgia, serif; }
+    .intro p { margin: 10px 0 0; }
+    .comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 1240px; margin: auto; padding: 0 24px 36px; }
+    .sample { --blue: #1e2e4f; --hover: #0d1b2a; --heading: #0d1b2a; --muted: #5b6981; --card: #fff; background: #f7eadd; border: 1px solid #d6c3a3; border-radius: 12px; overflow: hidden; }
+    .sample--proposed { --blue: #526580; --hover: #40516a; --heading: #34445a; --muted: #5b6981; --card: #fffcf7; }
+    .label { background: var(--blue); color: #fff; padding: 13px 20px; text-align: center; font-weight: 500; letter-spacing: .04em; }
+    .content { padding: clamp(20px, 3vw, 36px); text-align: center; }
+    .brand { margin: 0; color: var(--heading); font: 500 36px/1.2 "Cormorant Garamond", Georgia, serif; }
+    .brand span { color: #a67c38; font-family: "Pinyon Script", cursive; }
+    .date { margin: 8px 0 24px; color: var(--muted); font-size: 14px; }
+    .eyebrow { color: #a67c38; font: 30px/1.2 "Pinyon Script", cursive; }
+    h2 { color: var(--heading); margin: 5px 0 12px; font: 500 36px/1.15 "Cormorant Garamond", Georgia, serif; }
+    .description { color: var(--muted); margin: 0 auto 24px; max-width: 400px; }
+    .card { background: var(--card); padding: 26px 20px; border: 1px solid #e4d5bc; box-shadow: 0 6px 22px rgba(13, 27, 42, .08); border-radius: 3px; }
+    .kicker { color: var(--blue); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; margin: 0 0 12px; }
+    .card h3 { margin: 0 0 10px; color: var(--heading); font: 500 28px/1.2 "Cormorant Garamond", Georgia, serif; }
+    .card p:not(.kicker) { color: var(--muted); margin: 0 0 20px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 13px 22px; background: var(--blue); border: 1px solid var(--blue); color: #fff; font: 500 11px/1.4 "Jost", sans-serif; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease; }
+    .button:hover { background: var(--hover); border-color: var(--hover); }
+    .button--outline { background: transparent; color: var(--blue); }
+    .button--outline:hover { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .button:focus-visible { outline: 3px solid var(--heading); outline-offset: 4px; }
+    .divider { width: 140px; height: 1px; background: #d6c3a3; margin: 30px auto; }
+    .rsvp { margin-top: 20px; }
+    .rsvp .button { width: 100%; }
+    .swatches { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin-top: 26px; font-size: 11px; color: var(--heading); }
+    .swatch { display: grid; justify-items: center; gap: 6px; }
+    .swatch i { display: block; width: 40px; height: 40px; border: 1px solid #c5b7a4; border-radius: 50%; }
+    .footer { margin-top: 28px; padding: 18px; background: var(--heading); color: #fff; font: 500 21px/1.3 "Cormorant Garamond", Georgia, serif; }
+    .note { padding: 0 20px 30px; text-align: center; font-size: 14px; }
+    @media (max-width: 760px) { .comparison { grid-template-columns: 1fr; padding-inline: 14px; gap: 24px; } .intro h1 { font-size: 29px; } }
+    @media (prefers-reduced-motion: reduce) { .button { transition: none; } }
+  </style>
+</head>
+<body>
+  <header class="intro">
+    <h1>Azul actual vs. azul pizarra</h1>
+    <p>Prueba visual independiente. La invitación original no se modifica.</p>
+  </header>
+  <main class="comparison">
+    <section class="sample" aria-labelledby="current-label">
+      <div class="label" id="current-label">A · Azul actual · #1E2E4F</div>
+      <div class="content">
+        <p class="brand">Astrid <span>&amp;</span> Fidel</p>
+        <p class="date">9 de enero de 2027 · Acapulco, Guerrero</p>
+        <span class="eyebrow">la celebración</span>
+        <h2>Los Detalles</h2>
+        <p class="description">Un día especial para compartir con las personas que más queremos.</p>
+        <article class="card">
+          <p class="kicker">Ceremonia religiosa</p>
+          <h3>La Ceremonia</h3>
+          <p>Parroquia Nuestra Señora de Covadonga<br>4:45 p. m.</p>
+          <button type="button" class="button button--outline">Cómo llegar</button>
+        </article>
+        <div class="divider" aria-hidden="true"></div>
+        <span class="eyebrow">acompáñanos</span>
+        <h2>¿Vendrás?</h2>
+        <p class="description">Nos encantaría celebrar contigo.</p>
+        <button type="button" class="button">Confirmar asistencia</button>
+        <div class="rsvp"><button type="button" class="button">Enviar mi confirmación</button></div>
+        <div class="swatches" aria-label="Colores actuales">
+          <span class="swatch"><i style="background:#1e2e4f"></i>#1E2E4F</span>
+          <span class="swatch"><i style="background:#f7eadd"></i>#F7EADD</span>
+          <span class="swatch"><i style="background:#d6c3a3"></i>#D6C3A3</span>
+          <span class="swatch"><i style="background:#a67c38"></i>#A67C38</span>
+        </div>
+        <div class="footer">Astrid &amp; Fidel</div>
+      </div>
+    </section>
+    <section class="sample sample--proposed" aria-labelledby="proposed-label">
+      <div class="label" id="proposed-label">B · Azul pizarra · #526580</div>
+      <div class="content">
+        <p class="brand">Astrid <span>&amp;</span> Fidel</p>
+        <p class="date">9 de enero de 2027 · Acapulco, Guerrero</p>
+        <span class="eyebrow">la celebración</span>
+        <h2>Los Detalles</h2>
+        <p class="description">Un día especial para compartir con las personas que más queremos.</p>
+        <article class="card">
+          <p class="kicker">Ceremonia religiosa</p>
+          <h3>La Ceremonia</h3>
+          <p>Parroquia Nuestra Señora de Covadonga<br>4:45 p. m.</p>
+          <button type="button" class="button button--outline">Cómo llegar</button>
+        </article>
+        <div class="divider" aria-hidden="true"></div>
+        <span class="eyebrow">acompáñanos</span>
+        <h2>¿Vendrás?</h2>
+        <p class="description">Nos encantaría celebrar contigo.</p>
+        <button type="button" class="button">Confirmar asistencia</button>
+        <div class="rsvp"><button type="button" class="button">Enviar mi confirmación</button></div>
+        <div class="swatches" aria-label="Colores propuestos">
+          <span class="swatch"><i style="background:#526580"></i>#526580</span>
+          <span class="swatch"><i style="background:#f7eadd"></i>#F7EADD</span>
+          <span class="swatch"><i style="background:#d6c3a3"></i>#D6C3A3</span>
+          <span class="swatch"><i style="background:#a67c38"></i>#A67C38</span>
+        </div>
+        <div class="footer">Astrid &amp; Fidel</div>
+      </div>
+    </section>
+  </main>
+  <p class="note">En computadora: comparación lado a lado. En celular: primero A y después B.<br>Los botones son solo muestras; no envían información ni abren ubicaciones.</p>
+</body>
+</html>

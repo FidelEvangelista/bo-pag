@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Íconos candidatos — Papás del novio</title>
+<style>
+  :root { --ivory:#F7EADD; --blush:#F3EADC; --gold-soft:#D6C3A3; --gold:#A67C38; --navy:#1E2E4F; --muted:#5B6981; }
+  body { margin:0; background:var(--ivory); font-family:Arial,Helvetica,sans-serif; padding:34px 20px 46px; }
+  h1 { font-size:17px; color:var(--navy); text-align:center; font-weight:700; margin:0 0 8px; }
+  .nota { font-size:13px; color:var(--muted); text-align:center; margin:0 auto 32px; max-width:660px; line-height:1.5; }
+  .grid { display:flex; flex-wrap:wrap; gap:28px; justify-content:center; max-width:1120px; margin:0 auto; }
+  .card { width:168px; text-align:center; }
+  /* Mismo tratamiento que la página real: círculo de 84px y svg de 40px. */
+  .parents-ico { width:84px; height:84px; margin:0 auto 12px; display:grid; place-items:center; border-radius:50%;
+    background:radial-gradient(circle at 30% 28%, #fff 0%, var(--blush) 78%); border:1px solid var(--gold-soft);
+    color:var(--gold); box-shadow:inset 0 0 0 4px var(--ivory), 0 0 0 1px var(--gold-soft), 0 8px 20px rgba(166,124,56,.16); }
+  .parents-ico svg { width:40px; height:40px; }
+  .n { font-size:12.5px; font-weight:700; color:var(--navy); }
+  .d { font-size:12px; color:var(--muted); margin-top:3px; line-height:1.35; }
+  .actual .parents-ico { outline:2px dashed var(--gold); outline-offset:4px; }
+  .zoom { display:flex; gap:26px; justify-content:center; margin-top:44px; flex-wrap:wrap; }
+  .zoom .parents-ico { width:140px; height:140px; margin:0 auto 10px; }
+  .zoom .parents-ico svg { width:64px; height:64px; }
+  .zoom .n { font-size:12px; }
+</style>
+</head>
+<body>
+
+<h1>Íconos candidatos — “Papás del novio”</h1>
+<p class="d" style="text-align:center;margin:0 0 30px">Los dos primeros son los actuales (la rosa de la novia y el que no te gustaba). Mirá cuál te cierra y decime el número: lo dejo puesto en la invitación.</p>
+
+<div class="zoom">
+  <div>
+    <span class="parents-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21h13"/><path d="M8 21l1-8.4c.2-1.7.9-3.2 2.6-4.3 1.3-.8 3-1.3 4.6-1.3"/><path d="M16.2 7c.5 1.3.9 3 .3 5-.4 1.5-1.3 2.6-2.5 3.2"/><path d="M4.5 13.6c1.4.8 3.2 1 4.9.3"/></svg></span>
+    <p class="n">Rosa — actual de la novia</p>
+  </div>
+  <div>
+    <span class="parents-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3"/><path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4"/><path d="M5 21h14"/></svg></span>
+    <p class="n">1 · Brote (elegido)</p>
+  </div>
+  <div>
+    <span class="parents-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 19a4 4 0 0 1-2.24-7.32A3.5 3.5 0 0 1 9 6.03V6a3 3 0 1 1 6 0v.04a3.5 3.5 0 0 1 3.24 5.65A4 4 0 0 1 16 19Z"/><path d="M12 19v3"/></svg></span>
+    <p class="n">Árbol — familia / raíces</p>
+  </div>
+</div>
+
+<div class="zoom" style="margin-top:34px">
+  <div class="actual">
+    <span class="parents-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21h14"/><path d="M7.5 21V8.5c0-2 1.6-3.5 4-3.5s4.5 1.4 4.5 3.5V21"/><path d="M7.5 12h9"/></svg></span>
+    <p class="n">El actual (el que no te gustó)</p>
+  </div>
+  <div>
+    <span class="parents-ico"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"/><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"/></svg></span>
+    <p class="n">Ramita del sitio</p>
+  </div>
+</div>
+
+<p class="d" style="text-align:center;margin-top:40px;font-size:11.5px">
+  Comparador de trabajo: no forma parte de la invitación ni se publica solo. Se puede borrar cuando ya no haga falta.
+</p>
+
+</body>
+</html>

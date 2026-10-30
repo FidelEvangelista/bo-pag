@@ -1,0 +1,855 @@
+<html lang="es"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Astrid &amp; Fidel — 9 de Enero, 2027 | Invitación de Boda</title>
+  <meta name="description" content="Astrid &amp; Fidel se casan el 9 de enero de 2027 en Acapulco, Guerrero. Confirmación, detalles del evento, registro y más.">
+  <meta name="keywords" content="invitación de boda, Astrid y Fidel, RSVP, boda 2027">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Astrid &amp; Fidel — Nos Vamos a Casar">
+  <meta property="og:description" content="Acompáñanos el 9 de enero de 2027 en Acapulco, Guerrero para celebrar nuestra boda.">
+  <meta property="og:image" content="img/hero.jpg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=Jost:wght@300;400;500&amp;family=Pinyon+Script&amp;display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+  <!-- El ?v= cambia cuando cambia el archivo, para que el navegador no sirva una
+       versión vieja del caché (le pasaba al probar en local con file://). -->
+  <link rel="stylesheet" href="css/style.css?v=20261018">
+
+  <style>
+    /* Velo de entrada: cubre la página con el MISMO color papel del sobre
+       (#f6f6f4) y se desvanece al cargar, para que la invitación aparezca
+       POCO A POCO al llegar desde el sobre.
+       Duración 700 ms (venía de 3.2 s: sumado al espera del sobre daba ~4.7 s
+       de blanco acumulado). La curva arranca suave y termina suave, así el
+       inicio de la invitación emerge en vez de aparecer de golpe, pero sin
+       obligar a esperar. Es el rango 600-900 ms que pide la retro.
+       Para volver a la entrada seca, borrá este bloque y el <div class="page-veil">. */
+    .page-veil {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background-color: #f6f6f4;
+      pointer-events: none;
+      animation: pageVeilOut 700ms cubic-bezier(0.33, 0, 0.45, 1) 0.05s forwards;
+    }
+
+    @keyframes pageVeilOut {
+      from { opacity: 1; }
+      to   { opacity: 0; visibility: hidden; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .page-veil { animation: none; opacity: 0; visibility: hidden; }
+    }
+
+    /* Lienzo del polvo de hadas de la entrada (ver el <canvas> más abajo).
+       Sistema traído del archivo de referencia
+       recursos/sobre_invitacion/efecto particulas.html.
+       Tiene que ir por ENCIMA del velo: el papel es z-index 9999, así que el
+       lienzo va en 10000. Si quedara debajo, el polvo chispearía escondido
+       detrás del papel y no se vería nada.
+       No intercepta clics (pointer-events: none): la invitación queda intacta
+       por debajo.
+       Para volver a la entrada seca, borrá este bloque, el <canvas> y su script. */
+    #fairyDustCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10000;
+    }
+  </style>
+
+</head>
+<body>
+  <!-- Velo de entrada: se desvanece al cargar y revela la invitación gradualmente -->
+  <div class="page-veil" aria-hidden="true"></div>
+
+  <!-- Polvo de hadas: se dispara a mitad del velo, cuando la invitación ya asoma
+       (ver el script de abajo). Lienzo propio, por encima del velo. -->
+  <canvas id="fairyDustCanvas" aria-hidden="true" width="1920" height="963"></canvas>
+
+  <script>
+    // Polvo de hadas de la entrada.
+    // Es el sistema del archivo de referencia
+    // recursos/sobre_invitacion/efecto particulas.html, portado tal cual: mismo
+    // lienzo, misma paleta, mismas partículas (destellos de 4 puntas + núcleos con
+    // halo) y misma física (explosión desde el sello, turbulencia de aire,
+    // flotabilidad, titileo y decaimiento lento).
+    // Lo único que cambió es CUÁNDO arranca: allá salía al disolverse el sello,
+    // acá sale a mitad del velo de entrada, con la invitación ya asomando, y sigue
+    // chispeando después de que el papel se termina de ir.
+    (function () {
+      const canvas = document.getElementById('fairyDustCanvas');
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Con movimiento reducido no hay efecto (ni lienzo).
+      if (!canvas || reduce) {
+        if (canvas) canvas.remove();
+        return;
+      }
+
+      const ctx = canvas.getContext('2d');
+
+      // Cuándo arranca: el velo dura 700 ms y empieza a los 0,05 s (ver .page-veil
+      // en el <style> de arriba), así que termina a los 0,75 s.
+      // El polvo nace a mitad del velo, con la invitación ya asomando, y sigue
+      // chispeando después de que el papel se termina de ir.
+      // Este es el piso: más temprano que esto el papel (#f6f6f4, casi opaco) tapa
+      // la explosión y las partículas se ven lavadas.
+      const DUST_AT_MS = 380;
+
+      let particles = [];
+      let animFrameId = null;
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+
+      // Paleta mágica de polvo de hadas (dorados, champán y blanco perlado)
+      const dustColors = [
+        '255, 252, 235', // Blanco cálido brillante
+        '248, 228, 168', // Oro champán
+        '230, 198, 116', // Dorado clásico
+        '255, 244, 206', // Perla luminosa
+        '218, 180, 92'   // Dorado intenso
+      ];
+
+      class FairyParticle {
+        constructor(x, y, isBurst) {
+          this.x = x;
+          this.y = y;
+          this.color = dustColors[Math.floor(Math.random() * dustColors.length)];
+          this.isStar = Math.random() < 0.35; // 35% son destellos de 4 puntas
+
+          if (isBurst) {
+            // Estela mágica que nace del sello al disolverse
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 5.2 + 0.6;
+            this.vx = Math.cos(angle) * speed;
+            this.vy = Math.sin(angle) * speed - Math.random() * 1.2;
+            this.size = Math.random() * 3.4 + 1.2;
+            this.decay = Math.random() * 0.009 + 0.006;
+          } else {
+            // Polvo de hadas flotando suavemente por la invitación
+            this.vx = (Math.random() - 0.5) * 1.1;
+            this.vy = -Math.random() * 1.2 - 0.3;
+            this.size = Math.random() * 2.8 + 1;
+            this.decay = Math.random() * 0.006 + 0.004;
+          }
+
+          this.alpha = Math.random() * 0.34 + 0.32;
+          this.twinkleSpeed = Math.random() * 0.08 + 0.03;
+          this.twinklePhase = Math.random() * Math.PI * 2;
+          this.waveAngle = Math.random() * Math.PI * 2;
+          this.waveSpeed = Math.random() * 0.04 + 0.015;
+        }
+
+        update() {
+          this.waveAngle += this.waveSpeed;
+          this.twinklePhase += this.twinkleSpeed;
+
+          // Movimiento suave con ligera turbulencia de aire
+          this.x += this.vx + Math.sin(this.waveAngle) * 0.45;
+          this.y += this.vy;
+
+          // Desaceleración progresiva para que floten
+          this.vx *= 0.985;
+          this.vy = this.vy * 0.985 - 0.012; // Flotabilidad ascendente sutil
+
+          this.alpha -= this.decay;
+        }
+
+        draw(context) {
+          if (this.alpha <= 0) return;
+
+          const twinkle = (Math.sin(this.twinklePhase) + 1) * 0.5; // 0 a 1
+          const currentAlpha = Math.max(0, this.alpha * (0.45 + twinkle * 0.55));
+
+          context.save();
+          context.translate(this.x, this.y);
+
+          // Halo luminoso suave alrededor de cada partícula
+          const glowRadius = this.size * 3.2;
+          const grad = context.createRadialGradient(0, 0, 0, 0, 0, glowRadius);
+          grad.addColorStop(0, `rgba(${this.color}, ${currentAlpha})`);
+          grad.addColorStop(0.4, `rgba(${this.color}, ${currentAlpha * 0.32})`);
+          grad.addColorStop(1, `rgba(${this.color}, 0)`);
+
+          context.fillStyle = grad;
+          context.beginPath();
+          context.arc(0, 0, glowRadius, 0, Math.PI * 2);
+          context.fill();
+
+          // Núcleo brillante o estrella de 4 puntas
+          if (this.isStar) {
+            const s = this.size * (1.4 + twinkle * 0.7);
+            context.fillStyle = `rgba(255, 255, 255, ${Math.min(1, currentAlpha * 1.0)})`;
+            context.beginPath();
+            context.moveTo(0, -s * 1.8);
+            context.quadraticCurveTo(0, 0, s * 1.8, 0);
+            context.quadraticCurveTo(0, 0, 0, s * 1.8);
+            context.quadraticCurveTo(0, 0, -s * 1.8, 0);
+            context.quadraticCurveTo(0, 0, 0, -s * 1.8);
+            context.fill();
+          } else {
+            context.fillStyle = `rgba(255, 255, 255, ${Math.min(1, currentAlpha * 1.0)})`;
+            context.beginPath();
+            context.arc(0, 0, this.size * 0.65, 0, Math.PI * 2);
+            context.fill();
+          }
+
+          context.restore();
+        }
+      }
+
+      function triggerFairyDust() {
+        // El centro de la pantalla es donde estaba el sello de lacre que se
+        // disolvió en el sobre: la explosión arranca de ahí para que el polvo se
+        // sienta como la continuación de esa salida, no como algo aparte.
+        const centerX = window.innerWidth * 0.5;
+        const centerY = window.innerHeight * 0.49;
+
+        // Intensidad reducida (pedido §3 de la retro visual). Antes: 130 de
+        // explosión + 75 ambientales = 205, y los destellos competían con los
+        // nombres, la fecha y los botones. Ahora 70 + 26 = 96, con menos alfa y
+        // decaimiento más rápido: el efecto se concentra en la entrada y después
+        // se apaga solo.
+        for (let i = 0; i < 70; i++) {
+          const offsetR = Math.random() * 48;
+          const offsetAngle = Math.random() * Math.PI * 2;
+          particles.push(
+            new FairyParticle(
+              centerX + Math.cos(offsetAngle) * offsetR,
+              centerY + Math.sin(offsetAngle) * offsetR,
+              true
+            )
+          );
+        }
+
+        // Brillos ambientales repartidos sobre la pantalla de inicio de la invitación
+        for (let i = 0; i < 26; i++) {
+          particles.push(
+            new FairyParticle(
+              Math.random() * window.innerWidth,
+              Math.random() * window.innerHeight,
+              false
+            )
+          );
+        }
+
+        if (!animFrameId) {
+          animateFairyDust();
+        }
+      }
+
+      function animateFairyDust() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          particles[i].update();
+          particles[i].draw(ctx);
+          if (particles[i].alpha <= 0) {
+            particles.splice(i, 1);
+          }
+        }
+
+        if (particles.length > 0) {
+          animFrameId = requestAnimationFrame(animateFairyDust);
+        } else {
+          animFrameId = null;
+        }
+      }
+
+      // Un solo disparo, en el tramo final del fundido.
+      window.setTimeout(triggerFairyDust, DUST_AT_MS);
+    })();
+  </script>
+
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+
+  <!-- ============================ HEADER ============================ -->
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-wrap">
+      <a class="brand" href="#home" aria-label="Astrid and Fidel — home">Astrid <em>&amp;</em> Fidel</a>
+
+      <nav aria-label="Primary">
+        <ul class="nav-menu" id="navMenu">
+          <li><a href="#home" class="active">Inicio</a></li>
+          <li><a href="#story" class="">Historia</a></li>
+          <li><a href="#padres" class="">Padres</a></li>
+          <li><a href="#details" class="">Detalles</a></li>
+          <li><a href="#dress-code" class="">Vestimenta</a></li>
+          <li hidden=""><a href="#gallery">Galería</a></li>
+          <li hidden=""><a href="#party">Grupo</a></li>
+<li hidden=""><a href="#travel">Viaje</a></li>
+          <li><a href="#rsvp" class="">RSVP</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <span class="count-chip" aria-hidden="true"><b id="chipDays">73</b> días</span>
+        <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navMenu"><span></span></button>
+      </div>
+    </div>
+  </header>
+  <div class="nav-backdrop" id="navBackdrop" hidden=""></div>
+
+  <main id="main">
+
+    <!-- ============================ HERO ============================ -->
+    <section class="hero" id="home" aria-label="Astrid and Fidel are getting married">
+      <div class="hero__bg" role="img" aria-label="Foto de portada de boda"></div>
+      <div class="hero__inner">
+        <p class="hero__pre">Nuestra Boda</p>
+        <h1 class="hero__names">Astrid<span class="amp">&amp;</span>Fidel</h1>
+        <p class="hero__meta">Sábado, 9 de Enero <span>•</span> 2027</p>
+        <p class="hero__venue">Parroquia N.S. de Covadonga &amp; Casa Los Juanes — Acapulco, Guerrero</p>
+
+        <div class="countdown" id="countdown" data-date="2027-01-09T16:45:00" aria-label="Countdown to the wedding">
+          <div class="count-cell"><b id="cd-days">73</b><span>Días</span></div>
+          <div class="count-cell"><b id="cd-hours">17</b><span>Horas</span></div>
+          <div class="count-cell"><b id="cd-mins">16</b><span>Minutos</span></div>
+          <div class="count-cell"><b id="cd-secs">16</b><span>Segundos</span></div>
+        </div>
+
+        <div class="hero__cta">
+          <a href="#rsvp" class="btn-ec btn-ec--light btn-ec--pulse">Confirmar Asistencia</a>
+          <!-- "Nuestra Historia" hidden on request: the story heading is gone from #story.
+               Markup kept so it can be restored by removing the hidden attribute. -->
+          <a href="#story" class="btn-ec btn-ec--ghost" style="color:#fff;border-color:rgba(255,255,255,.6)" hidden="">Nuestra Historia</a>
+        </div>
+      </div>
+      <a class="scroll-cue" href="#story" aria-label="Scroll to our story">
+        <svg viewBox="0 0 24 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="1" width="10" height="20" rx="5"></rect><path d="M12 6v4"></path><path d="M8 27l4 4 4-4"></path></svg>
+      </a>
+    </section>
+
+    <!-- ============================ OUR STORY ============================ -->
+    <section class="section" id="story">
+      <div class="container">
+
+        <div class="story-quote reveal in">
+          <p class="overline story-quote-kicker">Mensaje de los novios</p>
+          <p class="story-quote-text">“De todos los caminos que pudimos tomar, que bonito que el destino nos haya llevado hacia el mismo altar" Acompananos en este momento tan especial para nosotros</p>
+        </div>
+      <div class="container">
+
+        <div class="story-quote reveal in">
+          <p class="overline story-quote-kicker">Nuestra fe</p>
+          <p class="story-quote-text">“Una historia de amor es mucho más bonita cuando dejamos a Dios trabajar en nuestros corazones.”</p>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============================ PARENTS ============================ -->
+    <section class="section" id="padres" aria-labelledby="padres-title">
+      <div class="container">
+        <div class="section-head reveal in">
+          <span class="eyebrow">con la bendición de Dios</span>
+          <h2 id="padres-title">Nuestros Padres</h2>
+          <p>Gracias por su amor, su ejemplo y su bendición en este día tan especial.</p>
+          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"></path><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"></path></svg></div>
+        </div>
+
+        <div class="parents-grid">
+          <article class="parents-card reveal in">
+            <span class="parents-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21h13"></path><path d="M8 21l1-8.4c.2-1.7.9-3.2 2.6-4.3 1.3-.8 3-1.3 4.6-1.3"></path><path d="M16.2 7c.5 1.3.9 3 .3 5-.4 1.5-1.3 2.6-2.5 3.2"></path><path d="M4.5 13.6c1.4.8 3.2 1 4.9.3"></path></svg>
+            </span>
+            <p class="parents-role">Papás de la novia</p>
+            <h3>Elizabeth García Rodríguez <span class="parents-and">y</span> Miguel Luciano Lazaro</h3>
+          </article>
+
+          <article class="parents-card reveal in">
+            <span class="parents-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3"></path><path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4"></path><path d="M5 21h14"></path></svg>
+            </span>
+            <p class="parents-role">Papás del novio</p>
+            <h3>Aurora de la Puente Basabe <span class="parents-and">y</span> Samuel Evangelista Santana</h3>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ THE DETAILS ============================ -->
+    <section class="section section--blush" id="details" aria-labelledby="details-title">
+      <div class="container">
+        <div class="section-head reveal in">
+          <span class="eyebrow">la celebración</span>
+          <h2 id="details-title">Los Detalles</h2>
+          <p>Ceremonia religiosa en la Parroquia Nuestra Señora de Covadonga y un festejo de ensueño en Casa Los Juanes. Aquí todo lo que necesitas saber.</p>
+          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"></path><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"></path></svg></div>
+        </div>
+
+        <div class="detail-grid">
+          <article class="detail-card reveal in">
+            <div class="detail-frame">
+              <img src="img/lugarBoda/iglesia-img-hd.jpg" alt="Foto de la parroquia" loading="lazy">
+              <span class="tag">Ceremonia</span>
+            </div>
+            <div class="detail-body">
+              <h3>La Ceremonia</h3>
+              <p class="place">Parroquia Nuestra Señora de Covadonga</p>
+              <ul class="detail-list">
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.5" cy="14" r="5.5"></circle><circle cx="15.5" cy="14" r="5.5"></circle><path d="M9 4l3 3 3-3M12 7V2"></path></svg>
+                  <span><b>4:45 PM</b> — te esperamos desde las 4:30 PM</span>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                  <span>Ceremonia religiosa con la bendición de Dios</span>
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+                  <span><a href="https://maps.app.goo.gl/dnGxC4YtKZa3KR3AA" target="_blank" rel="noopener">Abrir ubicación de la parroquia</a></span>
+                </li>
+              </ul>
+              <a href="https://maps.app.goo.gl/dnGxC4YtKZa3KR3AA" class="btn-ec btn-ec--ghost" target="_blank" rel="noopener">Cómo llegar</a>
+            </div>
+          </article>
+
+          <article class="detail-card reveal in">
+            <div class="detail-frame">
+              <img src="img/lugarBoda/fiesta-img-hd.jpg" alt="Foto de la recepción" loading="lazy">
+              <span class="tag">Recepción</span>
+            </div>
+            <div class="detail-body">
+              <h3>La Fiesta</h3>
+              <p class="place">Casa Los Juanes</p>
+              <p class="overline itinerary-title">Horarios del festejo</p>
+              <ol class="itinerary">
+                <li class="it-item">
+                  <span class="it-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.5" cy="14" r="5.5"></circle><circle cx="15.5" cy="14" r="5.5"></circle><path d="M9 4l3 3 3-3M12 7V2"></path></svg>
+                  </span>
+                  <span class="it-info"><b class="it-time">6:00 PM</b><span class="it-label">Ceremonia civil</span></span>
+                </li>
+                <li class="it-item">
+                  <span class="it-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 3l1 8a4 4 0 0 0 8 0l1-8"></path><path d="M12 15v6M9 21h6"></path></svg>
+                  </span>
+                  <span class="it-info"><b class="it-time">7:30 PM</b><span class="it-label">Vals y brindis</span></span>
+                </li>
+                <li class="it-item">
+                  <span class="it-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 2v8M5 2v6a2 2 0 0 0 4 0V2M7 10v12"></path><path d="M16 2v20M16 10c3 0 5-2 5-4-2-3-4-4-5-4z"></path></svg>
+                  </span>
+                  <span class="it-info"><b class="it-time">8:30 PM</b><span class="it-label">Cena</span></span>
+                </li>
+                <li class="it-item">
+                  <span class="it-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 18V5l10-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="16" cy="16" r="3"></circle></svg>
+                  </span>
+                  <span class="it-info"><b class="it-time">9:30 PM</b><span class="it-label">Fiesta</span></span>
+                </li>
+                <li class="it-item">
+                  <span class="it-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+                  </span>
+                  <span class="it-info"><b class="it-time">01:30 AM</b><span class="it-label">Fin del evento</span></span>
+                </li>
+              </ol>
+              <ul class="detail-list">
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V9l8-5 8 5v12"></path><path d="M9 21v-6h6v6"></path></svg>
+                  <span><a href="https://maps.google.com/maps?q=16.830873489379883%2C-99.912841796875&amp;z=17&amp;hl=es" target="_blank" rel="noopener">Abrir ubicación de Casa Los Juanes</a></span>
+                </li>
+              </ul>
+              <a href="#rsvp" class="btn-ec">Reservar mi lugar</a>
+            </div>
+          </article>
+        </div>
+
+        </div>
+    </section>
+
+    <!-- ============================ DRESS CODE ============================ -->
+    <section class="section" id="dress-code" aria-labelledby="dress-title">
+      <div class="container">
+        <div class="section-head reveal in">
+          <span class="eyebrow">código de vestimenta</span>
+          <h2 id="dress-title">Cómo Vestirse</h2>
+          <p>Queremos que se sientan cómodos y que disfruten de la fiesta, por eso recomendamos:</p>
+          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"></path><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"></path></svg></div>
+        </div>
+
+        <div class="dress-wrap reveal in">
+          <span class="dress-badge">Semi-formal · Casual</span>
+          <div class="dress-grid">
+            <article class="dress-col">
+              <span class="dress-ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4l7 4 7-4 2 5-3 2v9H5v-9L3 9z"></path><path d="M11 13h2"></path></svg>
+              </span>
+              <h3>Para ellas</h3>
+              <p>Vestidos frescos y elegantes</p>
+            </article>
+            <article class="dress-col">
+              <span class="dress-ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3l4 3 4-3 3 5-2 14H7L5 8z"></path><path d="M8 3l1.5 3h5L16 3"></path></svg>
+              </span>
+              <h3>Para ellos</h3>
+              <p>Trajes ligeros o guayaberas</p>
+            </article>
+          </div>
+          <p class="dress-note">Pequeño detalle: por favor evita colores blanco, marfil, beige o similares para no opacar a los novios. <strong>¡Muchas gracias!</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ GALLERY ============================ -->
+    <section class="section" id="gallery" aria-labelledby="gallery-title" hidden="">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">momentos</span>
+          <h2 id="gallery-title">Nuestros Momentos</h2>
+          <p>Unas cuantas imágenes de nuestra historia juntos — y una pequeña preview de lo que será el gran día.</p>
+          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"></path><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"></path></svg></div>
+        </div>
+
+        <div class="gallery-grid reveal">
+          <figure class="g-item g-tall"><img src="img/gallery1.jpg" alt="Foto de galería 1" loading="lazy"></figure>
+          <figure class="g-item g-wide"><img src="img/gallery6.jpg" alt="Foto de galería 2" loading="lazy"></figure>
+          <figure class="g-item"><img src="img/gallery3.jpg" alt="Foto de galería 3" loading="lazy"></figure>
+          <figure class="g-item"><img src="img/gallery5.jpg" alt="Foto de galería 4" loading="lazy"></figure>
+          <figure class="g-item g-tall"><img src="img/gallery2.jpg" alt="Foto de galería 5" loading="lazy"></figure>
+          <figure class="g-item"><img src="img/gallery4.jpg" alt="Foto de galería 6" loading="lazy"></figure>
+          <figure class="g-item g-wide"><img src="img/lugarBoda/iglesea-insise-img-hd.jpg" alt="Interior de la parroquia" loading="lazy"></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ WEDDING PARTY ============================ -->
+    <section class="section section--blush" id="party" aria-labelledby="party-title" hidden="">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">a nuestro lado</span>
+          <h2 id="party-title">Nuestro Grupo</h2>
+          <p>Los amigos y familiares más queridos que nos acompañan en este día tan especial.</p>
+          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"></path><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"></path></svg></div>
+        </div>
+
+        <div class="party-grid">
+          <article class="party-card reveal">
+            <div class="party-portrait"><img src="img/party1.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
+            <p class="party-role">[Rol]</p>
+            <h3>[Nombre]</h3>
+            <p>[Breve descripción de esta persona]</p>
+          </article>
+          <article class="party-card reveal">
+            <div class="party-portrait"><img src="img/party2.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
+            <p class="party-role">[Rol]</p>
+            <h3>[Nombre]</h3>
+            <p>[Breve descripción de esta persona]</p>
+          </article>
+          <article class="party-card reveal">
+            <div class="party-portrait"><img src="img/party3.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
+            <p class="party-role">[Rol]</p>
+            <h3>[Nombre]</h3>
+            <p>[Breve descripción de esta persona]</p>
+          </article>
+          <article class="party-card reveal">
+            <div class="party-portrait"><img src="img/party4.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
+            <p class="party-role">[Rol]</p>
+            <h3>[Nombre]</h3>
+            <p>[Breve descripción de esta persona]</p>
+          </article>
+          <article class="party-card reveal">
+            <div class="party-portrait"><img src="img/party5.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
+            <p class="party-role">[Rol]</p>
+            <h3>[Nombre]</h3>
+            <p>[Breve descripción de esta persona]</p>
+          </article>
+          <article class="party-card reveal">
+            <div class="party-portrait"><img src="img/party6.jpg" alt="Foto de [Nombre]" loading="lazy"></div>
+            <p class="party-role">[Rol]</p>
+            <h3>[Nombre]</h3>
+            <p>[Breve descripción de esta persona]</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= BOLETOS ASIGNADOS ======================= -->
+    <!-- Página propia antes del RSVP. Solo se ve si la invitación llega con el
+         código del invitado (?i=CODIGO, el que reparte el generador de links):
+         initRsvp, en js/main.js, le pide los pases asignados a la hoja de
+         Google. Sin código válido la invitación es genérica y la sección
+         queda oculta. El número de pases ya NO viaja en la URL.
+         Acá NO se usa la clase .reveal a propósito: el observador de scroll
+         corre cuando esta sección todavía está oculta, y el contenido podría
+         quedarse con opacity:0. -->
+    <section class="section section--blush section-boletos" id="boletos" aria-labelledby="boletos-title" hidden="">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="boletos-title">Boletos Asignados</h2>
+        </div>
+
+        <div class="boletos">
+          <div class="boleto-icono" aria-hidden="true">
+            <svg viewBox="0 0 128 72" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round">
+              <!-- Cuerpo del boleto con los dos recortes del troquelado -->
+              <path d="M12 12 H85 Q90 22 95 12 H116 A6 6 0 0 1 122 18 V54 A6 6 0 0 1 116 60 H95 Q90 50 85 60 H12 A6 6 0 0 1 6 54 V18 A6 6 0 0 1 12 12 Z"></path>
+              <!-- Línea de corte del talón -->
+              <path d="M90 19 V53" stroke-dasharray="3 4" opacity=".55"></path>
+              <!-- Ramita -->
+              <g transform="translate(17.4 22.8) scale(1.2)" opacity=".9">
+                <path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"></path>
+                <path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"></path>
+              </g>
+              <!-- Monograma en el talón -->
+              <text x="108.5" y="39" text-anchor="middle" fill="currentColor" stroke="none" font-family="Jost, Helvetica, Arial, sans-serif" font-size="8" letter-spacing=".5">A&amp;F</text>
+            </svg>
+          </div>
+
+          <p class="boleto-linea">Hemos asignado</p>
+          <p class="boleto-numero" id="boletosNumero"></p>
+
+          <!-- Divisor del template (el mismo que usan las demás secciones). -->
+          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"></path><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"></path></svg></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ RSVP ============================ -->
+    <section class="section" id="rsvp" aria-labelledby="rsvp-title">
+      <div class="container">
+        <div class="section-head reveal in">
+          <span class="eyebrow">acompáñanos</span>
+          <h2 id="rsvp-title">¿Vendrás?</h2>
+          <p>Por favor confirma antes del <strong>20 de Diciembre, 2026</strong> para reservarte un lugar y un pedazo de pastel.</p>
+          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"></path><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"></path></svg></div>
+        </div>
+
+        <div class="rsvp-wrap reveal in">
+          <div class="rsvp-card">
+            <!-- Línea de cupo: quedó OCULTA porque la sección "Boletos Asignados"
+                 ya lo dice. Sigue en el HTML por si se quiere volver atrás
+                 (ver initRsvp en js/main.js). -->
+            <p class="rsvp-cupo" id="rsvpCupo" hidden=""></p>
+            <form class="rsvp-form" id="rsvpForm" novalidate="">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="fld-label" for="rsvp-name">Nombre completo</label>
+                  <input type="text" class="form-control" id="rsvp-name" name="name" autocomplete="name" required="">
+                </div>
+                <div class="col-md-6" hidden="">
+                  <label class="fld-label" for="rsvp-email">Correo electrónico</label>
+                  <input type="email" class="form-control" id="rsvp-email" name="email" autocomplete="email">
+                </div>
+
+                <div class="col-12">
+                  <span class="fld-label" id="attend-label">¿Asistirás?</span>
+                  <div class="attend-group" role="radiogroup" aria-labelledby="attend-label">
+                    <div class="attend-opt">
+                      <input type="radio" id="attend-yes" name="attending" value="Si" checked="">
+                      <label for="attend-yes">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                        ¡Con mucho gusto asistiré!
+                      </label>
+                    </div>
+                    <div class="attend-opt">
+                      <input type="radio" id="attend-no" name="attending" value="No">
+                      <label for="attend-no">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                        Lamentablemente no podré asistir
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label class="fld-label" for="rsvp-song">
+                    <span style="display:inline-flex;align-items:center;gap:.4rem">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 18V5l10-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="16" cy="16" r="3"></circle></svg>
+                      Una canción que te saque a bailar <span style="text-transform:none;letter-spacing:0;color:var(--muted)">(opcional)</span>
+                    </span>
+                  </label>
+                  <input type="text" class="form-control" id="rsvp-song" name="song" placeholder="Artista — Canción">
+                </div>
+
+                <div class="col-12">
+                  <label class="fld-label" for="rsvp-note">Un mensaje para la pareja <span style="text-transform:none;letter-spacing:0;color:var(--muted)">(opcional)</span></label>
+                  <textarea class="form-control" id="rsvp-note" name="note" rows="3" placeholder="Buenos deseos, o un mal chiste."></textarea>
+                </div>
+
+                <div class="col-12">
+                  <label class="fld-label" for="rsvp-food">¿Alguna restricción alimentaria? <span style="text-transform:none;letter-spacing:0;color:var(--muted)">(opcional)</span></label>
+                  <input type="text" class="form-control" id="rsvp-food" name="food" placeholder="Alergias, vegetariano, sin gluten…">
+                </div>
+
+                <div class="col-12 text-center" style="margin-top:.6rem">
+                  <button type="submit" class="btn-ec btn-ec--gold">Enviar mi confirmación</button>
+                </div>
+              </div>
+            </form>
+
+            <div class="rsvp-success" id="rsvpSuccess" role="status" aria-live="polite">
+              <p class="rsvp-success__title">¡Gracias por confirmar!</p>
+              <p>No podemos esperar para celebrar contigo. 🌿</p>
+              <p class="rsvp-success__fix">Si necesitás corregir algo, escribinos por WhatsApp y lo ajustamos.</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="rsvp-note reveal in"><strong>Importante:</strong> amamos a los niños, pero en esta ocasión queremos que todos disfruten de un ambiente tranquilo y totalmente para adultos.</p>
+      </div>
+    </section>
+
+    <!-- ============================ REGISTRY ============================ -->
+    <section class="section section--blush" id="registry" aria-labelledby="registry-title">
+      <div class="container">
+        <div class="section-head reveal in">
+          <span class="eyebrow">con gratitud</span>
+          <h2 id="registry-title">Mesa de Regalos</h2>
+          <p>Tu presencia es el mejor regalo — pero para quienes lo han preguntado, aquí pueden encontrar unas sugerencias.</p>
+          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"></path><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"></path></svg></div>
+        </div>
+
+        <div class="registry-grid">
+          <article class="reg-card reveal in">
+            <div class="reg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg></div>
+            <h3>Amazon</h3>
+            <p>Encuentra nuestra mesa de regalos con artículos para el hogar, electrodomésticos y más.</p>
+            <a href="https://www.amazon.com.mx/wedding/guest-view/3OA4F14CPG5AD" class="btn-ec btn-ec--ghost" target="_blank" rel="noopener">Ver mesa de regalos</a>
+          </article>
+          <article class="reg-card reveal in">
+            <div class="reg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg></div>
+            <h3>Transferencia bancaria</h3>
+            <p>Si prefieres hacer un depósito o transferencia, aquí tienes nuestros datos.</p>
+            <button class="btn-ec btn-ec--ghost registry-bank-btn" data-bank="banco" data-account="1234567890" data-clabe="012345678901234567" data-name="Astrid López / Fidel Evangelista">Ver datos bancarios</button>
+          </article>
+          <!-- HIDDEN honeymoon 
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ BANK MODAL ============================ -->
+    <div class="bank-modal" id="bankModal">
+      <div class="bank-modal__card">
+        <button class="bank-modal__close" id="bankModalClose" aria-label="Cerrar">×</button>
+        <h3>Datos bancarios</h3>
+        <div class="bank-modal__row">
+          <span class="bank-modal__label">Titular</span>
+          <span class="bank-modal__value" id="bankName">—</span>
+        </div>
+        <div class="bank-modal__row">
+          <span class="bank-modal__label">Banco</span>
+          <span class="bank-modal__value" id="bankBank">—</span>
+        </div>
+        <div class="bank-modal__row">
+          <span class="bank-modal__label">Cuenta</span>
+          <span class="bank-modal__value bank-modal__copy" id="bankAccount" data-copy="true">—</span>
+        </div>
+        <div class="bank-modal__row">
+          <span class="bank-modal__label">CLABE</span>
+          <span class="bank-modal__value bank-modal__copy" id="bankClabe" data-copy="true">—</span>
+        </div>
+        <p class="bank-modal__hint">Toca un dato para copiarlo al portapapeles</p>
+      </div>
+    </div>
+
+    <!-- ============================ TRAVEL & STAY ============================ -->
+    <section class="section" id="travel" aria-labelledby="travel-title" hidden="">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">cómo llegar</span>
+          <h2 id="travel-title">Viaje y Hospedaje</h2>
+          <p>Nuestra celebración se llevará a cabo en Acapulco, Guerrero. La ceremonia religiosa será en la Parroquia Nuestra Señora de Covadonga y el festejo en Casa Los Juanes.</p>
+          <div class="sprig" aria-hidden="true"><svg viewBox="0 0 46 22" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 2c-4 6-4 12 0 18 4-6 4-12 0-18Z"></path><path d="M23 8c-3-2-7-2-10 0M23 12c3-2 7-2 10 0"></path></svg></div>
+        </div>
+
+        <div class="travel-grid">
+          <div class="venue-feature reveal">
+            <img src="img/lugarBoda/fiesta-2-img-hd.jpg" alt="Foto del venue" loading="lazy">
+            <div>
+              <p class="overline" style="color:var(--gold-soft)">El Lugar</p>
+              <h3>Casa Los Juanes</h3>
+              <p>La fiesta se llevará a cabo en Casa Los Juanes. Te compartimos la ubicación exacta del festejo.</p>
+              <a href="https://maps.google.com/maps?q=16.830873489379883%2C-99.912841796875&amp;z=17&amp;hl=es" class="btn-ec btn-ec--light" target="_blank" rel="noopener">Abrir en Maps</a>
+            </div>
+          </div>
+
+          <div class="hotel-list">
+            <article class="hotel-card reveal">
+              <div class="hotel-thumb"><img src="img/hotel1.jpg" alt="Foto del hotel 1" loading="lazy"></div>
+              <div class="hotel-info">
+                <p class="rate">Desde $[precio] / noche</p>
+                <h4>[Nombre del Hotel 1]</h4>
+                <p>[Descripción breve. Código de descuento: <strong>[CÓDIGO]</strong>]</p>
+                <a href="#">Reservar</a>
+              </div>
+            </article>
+            <article class="hotel-card reveal">
+              <div class="hotel-thumb"><img src="img/hotel2.jpg" alt="Foto del hotel 2" loading="lazy"></div>
+              <div class="hotel-info">
+                <p class="rate">Desde $[precio] / noche</p>
+                <h4>[Nombre del Hotel 2]</h4>
+                <p>[Descripción breve del segundo hotel]</p>
+                <a href="#">Reservar</a>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <p class="travel-note reveal"><strong>¿Vuelas?</strong> Aeropuerto Internacional de Acapulco (ACA) está a 25 minutos del centro. [Recomendaciones de transporte adicionales.]</p>
+      </div>
+    </section>
+
+  </div></div></section></main>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer-monogram">Astrid &amp; Fidel</p>
+      <p class="footer-date">9 de Enero, 2027 — Acapulco, Guerrero</p>
+      <p class="footer-hash">#AstridyFidel2027</p>
+
+      <ul class="footer-nav">
+        <li><a href="#story">Nuestra Historia</a></li>
+        <li><a href="#padres">Nuestros Padres</a></li>
+        <li><a href="#details">Detalles</a></li>
+        <li hidden=""><a href="#gallery">Galería</a></li>
+        <li hidden=""><a href="#party">Nuestro Grupo</a></li>
+        <li><a href="#rsvp">RSVP</a></li>
+        <li hidden=""><a href="#travel">Viaje</a></li>
+      </ul>
+
+      <div class="footer-rule"></div>
+      <p class="footer-fine">
+        © 2027 Astrid &amp; Fidel. Hecho con amor.<br>
+        Plantilla por <a href="https://uicookies.com/">uiCookies</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- ============================ MUSIC ============================ -->
+  <button class="music-toggle" id="musicToggle" aria-label="Activar música" aria-pressed="false">
+    <svg class="music-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 18V5l12-2v13"></path>
+      <circle cx="6" cy="18" r="3"></circle>
+      <circle cx="18" cy="16" r="3"></circle>
+    </svg>
+    <svg class="music-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+      <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+      <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+    </svg>
+  </button>
+
+  <audio id="weddingMusic" loop="" preload="auto">
+    <source src="audio/jonasblakewood-indie-rock-557623.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="js/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js?v=20261018"></script>
+
+
+<div aria-hidden="true"></div></body></html>
