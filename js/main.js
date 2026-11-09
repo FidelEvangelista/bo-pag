@@ -228,10 +228,8 @@
         attending: attending ? attending.value : '',
         song:      document.getElementById('rsvp-song').value.trim(),
         note:      document.getElementById('rsvp-note').value.trim(),
-        // El Apps Script ya mapea datos.menu a su propia columna (línea 49 de
-        // google-apps-script.js). Se usa ese nombre de campo para que la
-        // restricción alimentaria caiga en su columna y no en el mensaje.
-        menu:      document.getElementById('rsvp-food').value.trim(),
+        // Keep the existing Apps Script payload compatible without a dietary question.
+        menu:      '',
         pases:     pasesAsignados > 0 ? pasesAsignados : ''
       };
 
